@@ -13,8 +13,12 @@ try {
     $stmt = $pdo->query("SELECT * FROM settings LIMIT 1");
     $settings = $stmt->fetch();
 
-    // Fetch latest 10 posts for magazine layout
-    $stmt = $pdo->query("SELECT * FROM posts ORDER BY created_at DESC LIMIT 10");
+    // Fetch categories for navigation
+    $stmt_nav = $pdo->query("SELECT * FROM categories ORDER BY name ASC LIMIT 5");
+    $nav_categories = $stmt_nav->fetchAll();
+
+    // Fetch latest 10 posts with categories
+    $stmt = $pdo->query("SELECT p.*, c.name as category_name FROM posts p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.created_at DESC LIMIT 10");
     $posts = $stmt->fetchAll();
 
     // The first post will be the hero
@@ -36,7 +40,7 @@ function getYouTubeID($url) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($settings['meta_keywords'] ?? 'YourStoryline'); ?> - Magazine</title>
+    <title>YourStoryline - Premium Magazine</title>
     <meta name="keywords" content="<?php echo htmlspecialchars($settings['meta_keywords'] ?? ''); ?>">
     <meta name="description" content="<?php echo htmlspecialchars($settings['meta_description'] ?? ''); ?>">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -52,11 +56,12 @@ function getYouTubeID($url) {
     <nav class="border-b border-slate-100 py-6 sticky top-0 bg-white/80 backdrop-blur-md z-50">
         <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
             <div class="flex items-center space-x-8">
-                <a href="index.php" class="text-3xl font-black tracking-tighter text-slate-900 uppercase">YourStoryline</a>
+                <a href="index" class="text-3xl font-black tracking-tighter text-slate-900 uppercase">YourStoryline</a>
                 <div class="hidden md:flex space-x-6 text-sm font-bold uppercase tracking-widest text-slate-400">
-                    <a href="index" class="hover:text-blue-600 transition text-blue-600">Stories</a>
-                    <a href="#" class="hover:text-blue-600 transition">Culture</a>
-                    <a href="#" class="hover:text-blue-600 transition">Tech</a>
+                    <a href="index" class="hover:text-blue-600 transition text-blue-600">All Stories</a>
+                    <?php foreach ($nav_categories as $nav_cat): ?>
+                        <a href="#" class="hover:text-blue-600 transition"><?php echo htmlspecialchars($nav_cat['name']); ?></a>
+                    <?php endforeach; ?>
                 </div>
             </div>
             <div class="flex items-center space-x-4">
@@ -78,7 +83,9 @@ function getYouTubeID($url) {
                 <?php else: ?>
                     <div class="w-full aspect-[16/10] bg-slate-100 flex items-center justify-center text-slate-300 rounded-3xl">No Media</div>
                 <?php endif; ?>
-                <div class="absolute top-6 left-6 bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest">Featured</div>
+                <div class="absolute top-6 left-6 bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest">
+                    <?php echo htmlspecialchars($hero['category_name'] ?? 'Featured'); ?>
+                </div>
             </div>
             <div class="lg:col-span-5 space-y-6">
                 <span class="text-sm font-bold text-blue-600 uppercase tracking-[0.2em]"><?php echo date('M d, Y', strtotime($hero['created_at'])); ?></span>
@@ -112,6 +119,9 @@ function getYouTubeID($url) {
                     <?php else: ?>
                         <div class="w-full aspect-square bg-slate-50 flex items-center justify-center text-slate-200">No Image</div>
                     <?php endif; ?>
+                    <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-blue-600">
+                        <?php echo htmlspecialchars($post['category_name'] ?? 'General'); ?>
+                    </div>
                 </div>
                 <div class="space-y-4">
                     <span class="text-xs font-black text-slate-400 uppercase tracking-widest block"><?php echo date('M d, Y', strtotime($post['created_at'])); ?></span>
@@ -127,7 +137,7 @@ function getYouTubeID($url) {
             <div class="text-center py-32">
                 <h2 class="text-4xl font-black mb-4">The press is quiet today.</h2>
                 <p class="text-slate-400 mb-10">Waiting for the next big story to break.</p>
-                <a href="admin/posts.php?action=add" class="bg-blue-600 text-white px-10 py-4 rounded-full font-black hover:bg-blue-700 transition shadow-xl shadow-blue-500/20">Write First Story</a>
+                <a href="admin/posts?action=add" class="bg-blue-600 text-white px-10 py-4 rounded-full font-black hover:bg-blue-700 transition shadow-xl shadow-blue-500/20">Write First Story</a>
             </div>
         <?php endif; ?>
 

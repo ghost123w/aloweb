@@ -21,7 +21,7 @@ try {
     if ($action === 'delete' && $id) {
         $stmt = $pdo->prepare("DELETE FROM posts WHERE id = ?");
         $stmt->execute([$id]);
-        header("Location: posts.php");
+        header("Location: posts");
         exit;
     }
 
@@ -30,6 +30,11 @@ try {
         $content = $_POST['content'];
         $seo_title = $_POST['seo_title'];
         $youtube_url = $_POST['youtube_url'];
+        $category_id = !empty($_POST['category_id']) ? $_POST['category_id'] : null;
+        $meta_title = $_POST['meta_title'];
+        $meta_keywords = $_POST['meta_keywords'];
+        $meta_description = $_POST['meta_description'];
+
         $featured_image = $_POST['existing_image'] ?? '';
 
         if (isset($_FILES['featured_image']) && $_FILES['featured_image']['error'] === UPLOAD_ERR_OK) {
@@ -45,29 +50,33 @@ try {
         }
 
         if ($id) {
-            $stmt = $pdo->prepare("UPDATE posts SET title = ?, content = ?, seo_title = ?, featured_image = ?, youtube_url = ? WHERE id = ?");
-            $stmt->execute([$title, $content, $seo_title, $featured_image, $youtube_url, $id]);
+            $stmt = $pdo->prepare("UPDATE posts SET title = ?, content = ?, seo_title = ?, featured_image = ?, youtube_url = ?, category_id = ?, meta_title = ?, meta_keywords = ?, meta_description = ? WHERE id = ?");
+            $stmt->execute([$title, $content, $seo_title, $featured_image, $youtube_url, $category_id, $meta_title, $meta_keywords, $meta_description, $id]);
         } else {
-            $stmt = $pdo->prepare("INSERT INTO posts (title, content, seo_title, featured_image, youtube_url) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$title, $content, $seo_title, $featured_image, $youtube_url]);
+            $stmt = $pdo->prepare("INSERT INTO posts (title, content, seo_title, featured_image, youtube_url, category_id, meta_title, meta_keywords, meta_description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$title, $content, $seo_title, $featured_image, $youtube_url, $category_id, $meta_title, $meta_keywords, $meta_description]);
 
             // Notification for new post to subscribers
             $stmt_sub = $pdo->query("SELECT email FROM subscribers");
             while ($subscriber = $stmt_sub->fetch()) {
-                sendNotification($subscriber['email'], "New Story: $seo_title", "Check out our new story: $title at " . "http://yourdomain.com/" . urlencode($seo_title));
+                sendNotification($subscriber['email'], "New Story: $title", "Check out our new story: $title at " . "http://yourdomain.com/story?title=" . urlencode($seo_title));
             }
         }
-        header("Location: posts.php");
+        header("Location: posts");
         exit;
     }
 
     if ($action === 'edit' || $action === 'add') {
-        $post = ['title' => '', 'content' => '', 'seo_title' => '', 'featured_image' => '', 'youtube_url' => ''];
+        $post = ['title' => '', 'content' => '', 'seo_title' => '', 'featured_image' => '', 'youtube_url' => '', 'category_id' => null, 'meta_title' => '', 'meta_keywords' => '', 'meta_description' => ''];
         if ($id) {
             $stmt = $pdo->prepare("SELECT * FROM posts WHERE id = ?");
             $stmt->execute([$id]);
             $post = $stmt->fetch();
         }
+
+        // Fetch categories
+        $stmt_cat = $pdo->query("SELECT * FROM categories ORDER BY name ASC");
+        $categories = $stmt_cat->fetchAll();
         ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -83,6 +92,7 @@ try {
         <nav class="flex-grow space-y-4">
             <a href="index" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">D</span><span>Dashboard</span></a>
             <a href="posts" class="flex items-center space-x-3 text-lg bg-blue-600 p-3 rounded-xl font-bold transition shadow-lg shadow-blue-500/20"><span class="w-5 h-5 flex items-center justify-center bg-white/20 rounded">P</span><span>Post Manager</span></a>
+            <a href="categories" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">C</span><span>Categories</span></a>
             <a href="settings" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">S</span><span>SEO Settings</span></a>
             <a href="profile" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">U</span><span>Profile</span></a>
         </nav>
@@ -107,6 +117,17 @@ try {
                         <input type="text" name="title" value="<?php echo htmlspecialchars($post['title']); ?>" required class="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-lg font-bold outline-none" placeholder="Enter a catchy title...">
                     </div>
                     <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Category</label>
+                        <select name="category_id" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="">Uncategorized</option>
+                            <?php foreach ($categories as $cat): ?>
+                                <option value="<?php echo $cat['id']; ?>" <?php echo $post['category_id'] == $cat['id'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($cat['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">SEO URL Slug</label>
                         <input type="text" name="seo_title" value="<?php echo htmlspecialchars($post['seo_title']); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-500 font-mono" placeholder="my-awesome-story">
                     </div>
@@ -121,6 +142,21 @@ try {
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">YouTube Video URL</label>
                             <input type="text" name="youtube_url" value="<?php echo htmlspecialchars($post['youtube_url']); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="https://youtube.com/watch?v=...">
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 p-6 rounded-2xl space-y-4">
+                        <h3 class="font-bold text-slate-800">SEO Metadata</h3>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Meta Title</label>
+                            <input type="text" name="meta_title" value="<?php echo htmlspecialchars($post['meta_title']); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="SEO Title">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Meta Keywords</label>
+                            <input type="text" name="meta_keywords" value="<?php echo htmlspecialchars($post['meta_keywords']); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="keyword1, keyword2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Meta Description</label>
+                            <textarea name="meta_description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Brief description for search engines..."><?php echo htmlspecialchars($post['meta_description']); ?></textarea>
                         </div>
                     </div>
                     <div>
@@ -138,7 +174,7 @@ try {
 </html>
         <?php
     } else {
-        $stmt = $pdo->query("SELECT * FROM posts ORDER BY created_at DESC");
+        $stmt = $pdo->query("SELECT p.*, c.name as category_name FROM posts p LEFT JOIN categories c ON p.category_id = c.id ORDER BY created_at DESC");
         $posts = $stmt->fetchAll();
         ?>
 <!DOCTYPE html>
@@ -155,6 +191,7 @@ try {
         <nav class="flex-grow space-y-4">
             <a href="index" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">D</span><span>Dashboard</span></a>
             <a href="posts" class="flex items-center space-x-3 text-lg bg-blue-600 p-3 rounded-xl font-bold transition shadow-lg shadow-blue-500/20"><span class="w-5 h-5 flex items-center justify-center bg-white/20 rounded">P</span><span>Post Manager</span></a>
+            <a href="categories" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">C</span><span>Categories</span></a>
             <a href="settings" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">S</span><span>SEO Settings</span></a>
             <a href="profile" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">U</span><span>Profile</span></a>
         </nav>
@@ -176,6 +213,7 @@ try {
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-100">
                             <th class="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Story Info</th>
+                            <th class="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Category</th>
                             <th class="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Date</th>
                             <th class="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
                         </tr>
@@ -183,7 +221,7 @@ try {
                     <tbody class="divide-y divide-slate-50">
                         <?php if (empty($posts)): ?>
                             <tr>
-                                <td colspan="3" class="px-8 py-12 text-center text-slate-400 font-medium">No stories found. Start publishing today!</td>
+                                <td colspan="4" class="px-8 py-12 text-center text-slate-400 font-medium">No stories found. Start publishing today!</td>
                             </tr>
                         <?php endif; ?>
                         <?php foreach ($posts as $post): ?>
@@ -203,12 +241,17 @@ try {
                                     </div>
                                 </div>
                             </td>
+                            <td class="px-8 py-6 text-center">
+                                <span class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-bold">
+                                    <?php echo htmlspecialchars($post['category_name'] ?? 'Uncategorized'); ?>
+                                </span>
+                            </td>
                             <td class="px-8 py-6 text-center text-slate-500 font-medium text-sm">
                                 <?php echo date('M d, Y', strtotime($post['created_at'])); ?>
                             </td>
                             <td class="px-8 py-6 text-right space-x-3">
-                                <a href="posts.php?action=edit&id=<?php echo $post['id']; ?>" class="text-blue-600 font-bold hover:text-blue-800 transition">Edit</a>
-                                <a href="posts.php?action=delete&id=<?php echo $post['id']; ?>" onclick="return confirm('Archive this story forever?')" class="text-red-400 font-bold hover:text-red-600 transition">Delete</a>
+                                <a href="posts?action=edit&id=<?php echo $post['id']; ?>" class="text-blue-600 font-bold hover:text-blue-800 transition">Edit</a>
+                                <a href="posts?action=delete&id=<?php echo $post['id']; ?>" onclick="return confirm('Archive this story forever?')" class="text-red-400 font-bold hover:text-red-600 transition">Delete</a>
                             </td>
                         </tr>
                         <?php endforeach; ?>
