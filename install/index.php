@@ -49,12 +49,14 @@ if ($step === 1) {
         $name = $_POST['db_name'];
 
         try {
-            $pdo = new PDO("mysql:host=$host", $user, $pass);
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $pdo = new PDO("mysql:host=$host", $user, $pass, [PDO::ATTR_TIMEOUT => 5, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
             $pdo->exec("CREATE DATABASE IF NOT EXISTS `$name` COLLATE utf8_general_ci");
             $pdo->exec("USE `$name`");
 
             $sql = file_get_contents('schema.sql');
+            if ($sql === false) {
+                throw new Exception("Could not read schema.sql file.");
+            }
             $pdo->exec($sql);
 
             $_SESSION['db_config'] = [
@@ -135,11 +137,11 @@ if ($step === 1) {
          echo "<a href='index.php?step=1' class='block mt-4 text-blue-600 text-center'>Start Over</a>";
     } else {
         $config_content = "<?php\n";
-        $config_content .= "define('DB_HOST', '" . addslashes($db['host']) . "');\n";
-        $config_content .= "define('DB_USER', '" . addslashes($db['user']) . "');\n";
-        $config_content .= "define('DB_PASS', '" . addslashes($db['pass']) . "');\n";
-        $config_content .= "define('DB_NAME', '" . addslashes($db['name']) . "');\n";
-        $config_content .= "define('ADMIN_EMAIL', '" . addslashes($_SESSION['admin_email']) . "');\n";
+        $config_content .= "define('DB_HOST', '" . str_replace("'", "\'", $db['host']) . "');\n";
+        $config_content .= "define('DB_USER', '" . str_replace("'", "\'", $db['user']) . "');\n";
+        $config_content .= "define('DB_PASS', '" . str_replace("'", "\'", $db['pass']) . "');\n";
+        $config_content .= "define('DB_NAME', '" . str_replace("'", "\'", $db['name']) . "');\n";
+        $config_content .= "define('ADMIN_EMAIL', '" . str_replace("'", "\'", $_SESSION['admin_email']) . "');\n";
         $config_content .= "?>";
 
         if (file_put_contents('../includes/config.php', $config_content)) {

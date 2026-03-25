@@ -1,7 +1,11 @@
 <?php
 session_start();
+if (!file_exists('../includes/config.php')) {
+    header("Location: ../install/index.php");
+    exit;
+}
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-    header("Location: login.php");
+    header("Location: login");
     exit;
 }
 require_once '../includes/config.php';

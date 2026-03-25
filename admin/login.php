@@ -1,5 +1,9 @@
 <?php
 session_start();
+if (!file_exists('../includes/config.php')) {
+    header("Location: ../install/index.php");
+    exit;
+}
 require_once '../includes/config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -27,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = "Invalid email or password.";
         }
     } catch (PDOException $e) {
-        $error = "Database error: " . $e->getMessage();
+        $error = "Database error: " . $e->getMessage() . ". <br><a href='../install/index.php' class='underline text-red-700'>Click here to run installer</a> if the database is not configured.";
     }
 }
 ?>
@@ -67,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
 
         <div class="mt-8 text-center">
-            <a href="../index.php" class="text-sm text-gray-400 hover:text-gray-600 transition">← Back to website</a>
+            <a href="../index" class="text-sm text-gray-400 hover:text-gray-600 transition">← Back to website</a>
         </div>
     </div>
 </body>
