@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS posts (
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     seo_title VARCHAR(255),
+    featured_image VARCHAR(255),
+    youtube_url VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
