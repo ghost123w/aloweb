@@ -15,6 +15,9 @@ try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    // Stats for metrics
+    $total_posts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
+
     // Check if categories table exists for join
     $catTableCheck = $pdo->query("SHOW TABLES LIKE 'categories'")->rowCount() > 0;
     if (!$catTableCheck) {
@@ -111,41 +114,106 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $id ? 'Edit' : 'Add'; ?> Post - YourStoryline Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0c0e14; color: #ffffff; }
+        .glass-card {
+            background: rgba(23, 25, 35, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            background: rgba(30, 35, 50, 0.6);
+            transform: translateY(-5px);
+        }
+        .sidebar-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sidebar-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        .sidebar-item.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+        }
+        input, select, textarea {
+            background: rgba(255, 255, 255, 0.02) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+        }
+        input:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 flex min-h-screen font-sans">
-    <aside class="w-64 bg-slate-900 text-white flex flex-col p-6 space-y-8">
-        <h2 class="text-2xl font-black text-blue-400">Storyline</h2>
-        <nav class="flex-grow space-y-4">
-            <a href="index" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">D</span><span>Dashboard</span></a>
-            <a href="posts" class="flex items-center space-x-3 text-lg bg-blue-600 p-3 rounded-xl font-bold transition shadow-lg shadow-blue-500/20"><span class="w-5 h-5 flex items-center justify-center bg-white/20 rounded">P</span><span>Post Manager</span></a>
-            <a href="categories" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">C</span><span>Categories</span></a>
-            <a href="settings" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">S</span><span>SEO Settings</span></a>
-            <a href="profile" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">U</span><span>Profile</span></a>
+<body class="flex min-h-screen relative overflow-x-hidden">
+    <!-- Background Accents -->
+    <div class="fixed top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] -z-10 -mr-64 -mt-64"></div>
+    <div class="fixed bottom-0 left-0 w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px] -z-10 -ml-32 -mb-32"></div>
+
+    <aside class="w-72 bg-[#11131a] text-slate-400 flex flex-col p-8 space-y-10 shadow-2xl fixed h-full z-50 border-r border-white/5">
+        <div class="flex items-center space-x-4">
+            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-lg shadow-blue-500/20">S</div>
+            <h2 class="text-2xl font-black tracking-tighter text-white">Storyline</h2>
+        </div>
+        <nav class="flex-grow space-y-2">
+            <a href="index" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v-2a2 2 0 01-2-2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v-2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="posts" class="sidebar-item active flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 4v4h4"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 16h6"></path></svg>
+                <span>Post Manager</span>
+            </a>
+            <a href="categories" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 11h.01M7 15h.01M13 7h.01M13 11h.01M13 15h.01M17 7h.01M17 11h.01M17 15h.01"></path></svg>
+                <span>Categories</span>
+            </a>
+            <a href="settings" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span>Settings</span>
+            </a>
+            <a href="profile" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                <span>Profile</span>
+            </a>
         </nav>
-        <div class="border-t border-slate-800 pt-6"><a href="logout" class="flex items-center space-x-3 text-lg text-red-400 hover:text-red-300 transition font-semibold"><span>Logout</span></a></div>
+        <div class="border-t border-white/5 pt-6">
+            <a href="logout" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold text-rose-500/80">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <span>Logout</span>
+            </a>
+        </div>
     </aside>
 
-    <main class="flex-grow p-10 overflow-auto">
-        <div class="max-w-4xl mx-auto">
-            <header class="mb-10 flex justify-between items-center">
+    <main class="flex-grow ml-72 p-12 overflow-auto">
+        <div class="max-w-5xl mx-auto">
+            <header class="mb-12 flex justify-between items-end">
                 <div>
-                    <h1 class="text-3xl font-black text-slate-800"><?php echo $id ? 'Edit Story' : 'New Story'; ?></h1>
-                    <p class="text-slate-500">Draft your next big headline.</p>
+                    <h1 class="text-4xl font-black text-white tracking-tighter mb-2"><?php echo $id ? 'Edit Story' : 'New Story'; ?></h1>
+                    <p class="text-slate-500 font-medium">Drafting the narrative of the future.</p>
                 </div>
-                <a href="posts" class="text-slate-400 hover:text-slate-600 font-bold">Cancel</a>
+                <a href="posts" class="text-slate-400 hover:text-white transition font-bold uppercase tracking-widest text-xs">Back to Manager</a>
             </header>
 
             <form method="post" enctype="multipart/form-data" class="space-y-8">
                 <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                 <input type="hidden" name="existing_image" value="<?php echo htmlspecialchars($post['featured_image']); ?>">
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Story Title</label>
-                        <input type="text" name="title" value="<?php echo htmlspecialchars($post['title']); ?>" required class="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-lg font-bold outline-none" placeholder="Enter a catchy title...">
+                <div class="glass-card p-10 rounded-[3rem] space-y-10">
+                    <div class="space-y-6">
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Story Title</label>
+                        <input type="text" name="title" value="<?php echo htmlspecialchars($post['title']); ?>" required class="w-full px-6 py-6 rounded-3xl text-2xl font-black outline-none placeholder:text-slate-800" placeholder="Enter a visionary headline...">
                     </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Category</label>
-                        <select name="category_id" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div class="space-y-6">
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Taxonomy</label>
+                        <select name="category_id" class="w-full px-6 py-4 rounded-2xl font-bold outline-none appearance-none !bg-[#1a1c23]">
                             <option value="">Uncategorized</option>
                             <?php foreach ($categories as $cat): ?>
                                 <option value="<?php echo $cat['id']; ?>" <?php echo $post['category_id'] == $cat['id'] ? 'selected' : ''; ?>>
@@ -154,16 +222,17 @@ try {
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">SEO URL Slug</label>
-                        <input type="text" name="seo_title" value="<?php echo htmlspecialchars($post['seo_title']); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-500 font-mono" placeholder="my-awesome-story">
+                    <div class="space-y-6">
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Permalink Slug</label>
+                        <input type="text" name="seo_title" value="<?php echo htmlspecialchars($post['seo_title']); ?>" class="w-full px-6 py-4 rounded-2xl outline-none font-mono text-slate-400" placeholder="story-url-path">
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Featured Image</label>
-                            <div class="space-y-4">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        <div class="space-y-6">
+                            <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Visual Asset</label>
+                            <div class="space-y-6">
                                 <div id="image-preview-container" class="relative group">
-                                    <div id="image-preview" class="w-full aspect-video rounded-3xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden flex items-center justify-center relative">
+                                    <div id="image-preview" class="w-full aspect-video rounded-[2.5rem] bg-black/40 border-2 border-dashed border-white/10 overflow-hidden flex items-center justify-center relative">
                                         <?php if ($post['featured_image']): ?>
                                             <img src="../uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full h-full object-cover">
                                         <?php else: ?>
@@ -179,21 +248,20 @@ try {
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                     </button>
                                 </div>
-                                <input type="file" name="featured_image" id="post-image" class="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-black file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition cursor-pointer shadow-xl shadow-blue-500/20">
+                                <input type="file" name="featured_image" id="post-image" class="w-full text-xs text-slate-500 file:mr-6 file:py-3 file:px-8 file:rounded-2xl file:border-0 file:text-xs file:font-black file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition cursor-pointer shadow-xl shadow-blue-500/20">
                             </div>
                         </div>
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">YouTube Video URL</label>
-                                <input type="text" name="youtube_url" value="<?php echo htmlspecialchars($post['youtube_url']); ?>" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="https://youtube.com/watch?v=...">
-                                <p class="text-[10px] text-slate-400 mt-2 italic">Provide a link to embed a video instead of an image.</p>
+                        <div class="space-y-8">
+                            <div class="space-y-6">
+                                <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Video Integration</label>
+                                <input type="text" name="youtube_url" value="<?php echo htmlspecialchars($post['youtube_url']); ?>" class="w-full px-6 py-4 rounded-2xl outline-none transition placeholder:text-slate-800" placeholder="https://youtube.com/watch?v=...">
                             </div>
-                            <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                                <h4 class="text-blue-800 font-bold text-sm mb-2 flex items-center">
-                                    <span class="mr-2">💡</span> Pro Tip
+                            <div class="p-8 rounded-[2rem] bg-gradient-to-br from-blue-600/10 to-purple-600/10 border border-white/5">
+                                <h4 class="text-blue-400 font-black text-xs uppercase tracking-widest mb-3 flex items-center">
+                                    <span class="mr-2">⚡</span> Optimizer
                                 </h4>
-                                <p class="text-blue-700 text-xs leading-relaxed">
-                                    Use a high-quality 16:9 aspect ratio image for the best visual impact on the homepage hero section.
+                                <p class="text-slate-400 text-xs leading-relaxed font-medium">
+                                    Use 16:9 cinematic assets for maximum platform impact.
                                 </p>
                             </div>
                         </div>
@@ -233,28 +301,25 @@ try {
                             removeBtn.classList.add('hidden');
                         });
                     </script>
-                    <div class="bg-slate-50 p-6 rounded-2xl space-y-4">
-                        <h3 class="font-bold text-slate-800">SEO Metadata</h3>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Meta Title</label>
-                            <input type="text" name="meta_title" value="<?php echo htmlspecialchars($post['meta_title']); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="SEO Title">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                        <div class="md:col-span-2 space-y-6">
+                            <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Narrative Content</label>
+                            <textarea name="content" rows="15" required class="w-full px-8 py-8 rounded-[2.5rem] outline-none placeholder:text-slate-800 text-lg leading-relaxed" placeholder="Tell the stories that matter..."><?php echo htmlspecialchars($post['content']); ?></textarea>
                         </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Meta Keywords</label>
-                            <input type="text" name="meta_keywords" value="<?php echo htmlspecialchars($post['meta_keywords']); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="keyword1, keyword2">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Meta Description</label>
-                            <textarea name="meta_description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Brief description for search engines..."><?php echo htmlspecialchars($post['meta_description']); ?></textarea>
+                        <div class="space-y-10">
+                            <div class="space-y-6">
+                                <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Meta Intelligence</label>
+                                <div class="space-y-4">
+                                    <input type="text" name="meta_title" value="<?php echo htmlspecialchars($post['meta_title']); ?>" class="w-full px-6 py-4 rounded-2xl outline-none text-xs font-bold" placeholder="SEO Title">
+                                    <input type="text" name="meta_keywords" value="<?php echo htmlspecialchars($post['meta_keywords']); ?>" class="w-full px-6 py-4 rounded-2xl outline-none text-xs font-bold" placeholder="Keywords">
+                                    <textarea name="meta_description" rows="5" class="w-full px-6 py-4 rounded-2xl outline-none text-xs font-medium" placeholder="Search description..."><?php echo htmlspecialchars($post['meta_description']); ?></textarea>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-6 rounded-[2rem] font-black text-xl hover:bg-blue-700 transition shadow-2xl shadow-blue-500/30 active:scale-[0.98]">
+                                <?php echo $id ? 'Commit Changes' : 'Launch Narrative'; ?>
+                            </button>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Content</label>
-                        <textarea name="content" rows="12" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Tell your story..."><?php echo htmlspecialchars($post['content']); ?></textarea>
-                    </div>
-                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xl hover:bg-blue-700 transition shadow-xl shadow-blue-500/20">
-                        <?php echo $id ? 'Update Story' : 'Publish Story'; ?>
-                    </button>
                 </div>
             </form>
         </div>
@@ -273,31 +338,114 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Posts - YourStoryline Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0c0e14; color: #ffffff; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .sidebar-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sidebar-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        .sidebar-item.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+        }
+    </style>
 </head>
-<body class="bg-gray-50 flex h-screen font-sans">
-    <aside class="w-64 bg-slate-900 text-white flex flex-col p-6 space-y-8">
-        <h2 class="text-2xl font-black text-blue-400">Storyline</h2>
-        <nav class="flex-grow space-y-4">
-            <a href="index" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">D</span><span>Dashboard</span></a>
-            <a href="posts" class="flex items-center space-x-3 text-lg bg-blue-600 p-3 rounded-xl font-bold transition shadow-lg shadow-blue-500/20"><span class="w-5 h-5 flex items-center justify-center bg-white/20 rounded">P</span><span>Post Manager</span></a>
-            <a href="categories" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">C</span><span>Categories</span></a>
-            <a href="settings" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">S</span><span>SEO Settings</span></a>
-            <a href="profile" class="flex items-center space-x-3 text-lg text-slate-400 hover:text-white hover:bg-white/5 p-3 rounded-xl transition font-semibold"><span class="w-5 h-5 flex items-center justify-center bg-white/10 rounded">U</span><span>Profile</span></a>
+<body class="flex min-h-screen relative overflow-x-hidden">
+    <!-- Background Accents -->
+    <div class="fixed top-0 right-0 w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[120px] -z-10 -mr-64 -mt-64"></div>
+    <div class="fixed bottom-0 left-0 w-[500px] h-[500px] bg-emerald-600/5 rounded-full blur-[100px] -z-10 -ml-32 -mb-32"></div>
+
+    <aside class="w-72 bg-[#11131a] text-slate-400 flex flex-col p-8 space-y-10 shadow-2xl fixed h-full z-50 border-r border-white/5">
+        <div class="flex items-center space-x-4">
+            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-lg shadow-blue-500/20">S</div>
+            <h2 class="text-2xl font-black tracking-tighter text-white">Storyline</h2>
+        </div>
+        <nav class="flex-grow space-y-2">
+            <a href="index" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v-2a2 2 0 01-2-2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v-2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="posts" class="sidebar-item active flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 4v4h4"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 16h6"></path></svg>
+                <span>Post Manager</span>
+            </a>
+            <a href="categories" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 11h.01M7 15h.01M13 7h.01M13 11h.01M13 15h.01M17 7h.01M17 11h.01M17 15h.01"></path></svg>
+                <span>Categories</span>
+            </a>
+            <a href="settings" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span>Settings</span>
+            </a>
+            <a href="profile" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                <span>Profile</span>
+            </a>
         </nav>
-        <div class="border-t border-slate-800 pt-6"><a href="logout" class="flex items-center space-x-3 text-lg text-red-400 hover:text-red-300 transition font-semibold"><span>Logout</span></a></div>
+        <div class="border-t border-white/5 pt-6">
+            <a href="logout" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold text-rose-500/80">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <span>Logout</span>
+            </a>
+        </div>
     </aside>
 
-    <main class="flex-grow p-10 overflow-auto">
-        <div class="max-w-6xl mx-auto">
-            <header class="flex justify-between items-center mb-12">
+    <main class="flex-grow ml-72 p-12 overflow-auto">
+        <div class="max-w-7xl mx-auto">
+            <header class="flex justify-between items-end mb-16">
                 <div>
-                    <h1 class="text-3xl font-black text-slate-800">Your Stories</h1>
-                    <p class="text-slate-500">Manage all your published content.</p>
+                    <h1 class="text-6xl font-black text-white tracking-tighter mb-4">Archive</h1>
+                    <p class="text-teal-500 font-bold uppercase tracking-[0.3em] text-[10px]">Strategic Narrative Management</p>
                 </div>
-                <a href="posts?action=add" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-blue-700 transition shadow-xl shadow-blue-500/10">+ New Story</a>
+                <div class="flex items-center space-x-6">
+                    <div class="hidden lg:flex items-center space-x-3 bg-white/5 border border-white/10 px-6 py-3 rounded-2xl">
+                        <div class="w-2 h-2 rounded-full bg-teal-400 animate-ping"></div>
+                        <span class="text-xs font-bold text-slate-300 uppercase tracking-widest">System Live</span>
+                    </div>
+                    <a href="posts?action=add" class="bg-blue-600 text-white px-10 py-4 rounded-[2rem] font-black text-lg hover:bg-blue-700 transition shadow-[0_0_40px_rgba(37,99,235,0.3)] active:scale-[0.98]">+ New Story</a>
+                </div>
             </header>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Mock Analytics Section to match the image aesthetic -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-16">
+                <div class="glass-card p-6 rounded-[2rem] relative overflow-hidden">
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Platform Velocity</span>
+                    <div class="text-2xl font-black text-white">432,502</div>
+                    <div class="text-[10px] text-teal-400 font-bold mt-2">+2.4% vs last week</div>
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500/0 via-teal-500/50 to-teal-500/0"></div>
+                </div>
+                <div class="glass-card p-6 rounded-[2rem]">
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Narrative Engagement</span>
+                    <div class="text-2xl font-black text-white">89.4%</div>
+                    <div class="flex space-x-1 mt-3">
+                        <div class="w-1.5 h-4 bg-blue-500/50 rounded-full"></div>
+                        <div class="w-1.5 h-6 bg-blue-500 rounded-full"></div>
+                        <div class="w-1.5 h-3 bg-blue-500/30 rounded-full"></div>
+                        <div class="w-1.5 h-5 bg-blue-500/80 rounded-full"></div>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-[2rem]">
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Active Reach</span>
+                    <div class="text-2xl font-black text-white"><?php echo $total_posts * 1250; ?></div>
+                    <div class="text-[10px] text-purple-400 font-bold mt-2">Aggregated Impressions</div>
+                </div>
+                <div class="glass-card p-6 rounded-[2rem] flex items-center justify-center border-dashed border-white/10 hover:bg-white/5 transition cursor-pointer">
+                    <span class="text-xs font-black text-slate-500 uppercase tracking-widest">+ Add Metric</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                 <?php if (empty($posts)): ?>
                     <div class="col-span-full bg-white p-20 rounded-[3rem] text-center border-2 border-dashed border-slate-200 flex flex-col items-center">
                         <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6 text-slate-200">
@@ -310,34 +458,43 @@ try {
                 <?php endif; ?>
 
                 <?php foreach ($posts as $post): ?>
-                <div class="bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-blue-500/5 transition duration-500 flex flex-col group">
-                    <div class="relative aspect-video rounded-3xl overflow-hidden mb-6 bg-slate-50">
+                <div class="glass-card rounded-[3rem] p-8 hover:bg-white/5 transition-all duration-500 group flex flex-col">
+                    <div class="relative aspect-video rounded-[2rem] overflow-hidden mb-8 bg-black/40 shadow-inner">
                         <?php if ($post['featured_image']): ?>
-                            <img src="../uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                            <img src="../uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full h-full object-cover group-hover:scale-105 transition duration-1000 opacity-90 group-hover:opacity-100">
                         <?php else: ?>
-                            <div class="w-full h-full flex items-center justify-center text-slate-200 italic font-black text-sm uppercase">No Featured Image</div>
+                            <div class="w-full h-full flex flex-col items-center justify-center space-y-3 opacity-20">
+                                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
                         <?php endif; ?>
-                        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-blue-600 shadow-sm">
-                            <?php echo htmlspecialchars($post['category_name'] ?? 'Uncategorized'); ?>
+                        <div class="absolute bottom-4 left-4 bg-blue-600/90 backdrop-blur-md px-4 py-1.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] text-white shadow-lg">
+                            <?php echo htmlspecialchars($post['category_name'] ?? 'General'); ?>
                         </div>
                     </div>
 
-                    <div class="flex-grow space-y-3 px-2">
-                        <div class="flex justify-between items-start">
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]"><?php echo date('M d, Y', strtotime($post['created_at'])); ?></span>
+                    <div class="flex-grow space-y-5">
+                        <div class="flex items-center justify-between">
+                             <div class="flex items-center space-x-2">
+                                <div class="w-1.5 h-1.5 rounded-full bg-teal-400"></div>
+                                <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]"><?php echo date('M d, Y', strtotime($post['created_at'])); ?></span>
+                             </div>
+                             <div class="text-[10px] font-bold text-slate-600">ID: #<?php echo $post['id']; ?></div>
                         </div>
-                        <h3 class="text-xl font-black text-slate-800 leading-tight line-clamp-2"><?php echo htmlspecialchars($post['title']); ?></h3>
-                        <p class="text-xs text-slate-400 font-mono truncate">/<?php echo htmlspecialchars($post['seo_title']); ?></p>
+                        <h3 class="text-2xl font-black text-white leading-tight tracking-tighter line-clamp-2 group-hover:text-blue-400 transition-colors"><?php echo htmlspecialchars($post['title']); ?></h3>
+                        <div class="flex items-center space-x-3 text-[10px] text-slate-500 font-mono bg-black/30 p-2.5 rounded-xl border border-white/5">
+                            <span class="text-blue-500/50">URL:</span>
+                            <span class="truncate">/<?php echo htmlspecialchars($post['seo_title']); ?></span>
+                        </div>
                     </div>
 
-                    <div class="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between px-2">
-                        <a href="posts?action=edit&id=<?php echo $post['id']; ?>" class="bg-slate-900 text-white px-6 py-2.5 rounded-2xl text-xs font-black hover:bg-blue-600 transition duration-300">Edit Story</a>
-                            <form action="posts?action=delete&id=<?php echo $post['id']; ?>" method="POST" onsubmit="return confirm('Archive this story forever?')" class="inline">
-                                <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
-                                <button type="submit" class="text-red-400 p-2 hover:bg-red-50 rounded-xl transition">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                </button>
-                            </form>
+                    <div class="mt-10 flex items-center space-x-4">
+                        <a href="posts?action=edit&id=<?php echo $post['id']; ?>" class="flex-grow bg-blue-600 hover:bg-blue-500 text-white text-center py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 shadow-lg shadow-blue-600/20 active:scale-95">Edit Story</a>
+                        <form action="posts?action=delete&id=<?php echo $post['id']; ?>" method="POST" onsubmit="return confirm('Erase this record from history?')" class="inline">
+                            <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
+                            <button type="submit" class="w-12 h-12 flex items-center justify-center text-rose-500/40 hover:text-rose-500 hover:bg-rose-500/10 border border-white/5 rounded-2xl transition-all active:scale-90">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </form>
                     </div>
                 </div>
                 <?php endforeach; ?>
