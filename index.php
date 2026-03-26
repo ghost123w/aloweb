@@ -13,17 +13,27 @@ try {
     $stmt = $pdo->query("SELECT * FROM settings LIMIT 1");
     $settings = $stmt->fetch();
 
-    // Fetch categories for navigation
-    $stmt_nav = $pdo->query("SELECT * FROM categories ORDER BY name ASC LIMIT 5");
-    $nav_categories = $stmt_nav->fetchAll();
+    // Check if categories table exists
+    $catTableCheck = $pdo->query("SHOW TABLES LIKE 'categories'")->rowCount() > 0;
+    $nav_categories = [];
+    $posts = [];
 
-    // Category filtering
-    $category_slug = $_GET['category'] ?? null;
-    if ($category_slug) {
-        $stmt = $pdo->prepare("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE c.slug = ? ORDER BY p.created_at DESC LIMIT 10");
-        $stmt->execute([$category_slug]);
+    if ($catTableCheck) {
+        // Fetch categories for navigation
+        $stmt_nav = $pdo->query("SELECT * FROM categories ORDER BY name ASC LIMIT 5");
+        $nav_categories = $stmt_nav->fetchAll();
+
+        // Category filtering
+        $category_slug = $_GET['category'] ?? null;
+        if ($category_slug) {
+            $stmt = $pdo->prepare("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE c.slug = ? ORDER BY p.created_at DESC LIMIT 10");
+            $stmt->execute([$category_slug]);
+        } else {
+            $stmt = $pdo->query("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.created_at DESC LIMIT 10");
+        }
     } else {
-        $stmt = $pdo->query("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.created_at DESC LIMIT 10");
+        // Fallback for legacy schema
+        $stmt = $pdo->query("SELECT *, NULL as category_name, NULL as category_slug FROM posts ORDER BY created_at DESC LIMIT 10");
     }
     $posts = $stmt->fetchAll();
 

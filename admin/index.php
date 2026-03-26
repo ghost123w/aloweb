@@ -8,6 +8,21 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     header("Location: login");
     exit;
 }
+
+require_once '../includes/config.php';
+$migration_needed = false;
+try {
+    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Check for categories table
+    $stmt = $pdo->query("SHOW TABLES LIKE 'categories'");
+    if ($stmt->rowCount() == 0) {
+        $migration_needed = true;
+    }
+} catch (PDOException $e) {
+    // Connection error handled elsewhere or ignore for now
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -37,6 +52,16 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     <!-- Main Content -->
     <main class="flex-grow p-10 overflow-auto">
         <div class="max-w-4xl">
+            <?php if ($migration_needed): ?>
+                <div class="bg-amber-50 border-2 border-amber-200 p-8 rounded-3xl mb-12 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-amber-800 font-black text-xl mb-1">Database Update Required</h2>
+                        <p class="text-amber-700">Your installation needs a quick update to support the new Category and SEO features.</p>
+                    </div>
+                    <a href="../migrate_v1.1.php" class="bg-amber-600 text-white px-8 py-3 rounded-2xl font-black hover:bg-amber-700 transition shadow-xl shadow-amber-600/20">Run Migration Now</a>
+                </div>
+            <?php endif; ?>
+
             <header class="flex justify-between items-center mb-12">
                 <h1 class="text-3xl font-black text-slate-800">Welcome, Admin</h1>
                 <a href="../index" class="bg-white border border-slate-200 px-6 py-2 rounded-xl text-slate-600 font-bold hover:bg-slate-50 transition shadow-sm">View Website →</a>

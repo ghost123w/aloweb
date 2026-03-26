@@ -24,6 +24,9 @@ try {
 
     // 2. Update Posts Table
     $columnsToAdd = [
+        'seo_title' => "VARCHAR(255) AFTER content",
+        'featured_image' => "VARCHAR(255) AFTER seo_title",
+        'youtube_url' => "VARCHAR(255) AFTER featured_image",
         'category_id' => "INT NULL AFTER youtube_url",
         'meta_title' => "VARCHAR(255) AFTER category_id",
         'meta_keywords' => "TEXT AFTER meta_title",

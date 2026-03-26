@@ -12,7 +12,15 @@ try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $stmt = $pdo->prepare("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE p.seo_title = ? LIMIT 1");
+    // Check if categories table exists
+    $catTableCheck = $pdo->query("SHOW TABLES LIKE 'categories'")->rowCount() > 0;
+
+    if ($catTableCheck) {
+        $stmt = $pdo->prepare("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE p.seo_title = ? LIMIT 1");
+    } else {
+        $stmt = $pdo->prepare("SELECT *, NULL as category_name, NULL as category_slug FROM posts WHERE seo_title = ? LIMIT 1");
+    }
+
     $stmt->execute([$title_slug]);
     $post = $stmt->fetch();
 

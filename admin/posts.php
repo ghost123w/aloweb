@@ -15,6 +15,13 @@ try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    // Check if categories table exists for join
+    $catTableCheck = $pdo->query("SHOW TABLES LIKE 'categories'")->rowCount() > 0;
+    if (!$catTableCheck) {
+        header("Location: index");
+        exit;
+    }
+
     $action = $_GET['action'] ?? 'list';
     $id = $_GET['id'] ?? null;
 
