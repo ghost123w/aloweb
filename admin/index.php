@@ -51,44 +51,59 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #e0e5ec; }
+
+        .neu-flat {
+            background: #e0e5ec;
+            box-shadow: 9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5);
+        }
+        .neu-inset {
+            background: #e0e5ec;
+            box-shadow: inset 6px 6px 12px #b8b9be, inset -6px -6px 12px #ffffff;
+        }
+        .neu-button {
+            background: #e0e5ec;
+            box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #ffffff;
+            transition: all 0.2s ease;
+        }
+        .neu-button:active {
+            box-shadow: inset 4px 4px 8px #b8b9be, inset -4px -4px 8px #ffffff;
+            transform: scale(0.98);
+        }
     </style>
 </head>
-<body class="bg-[#F8FAFC] flex min-h-screen relative">
-    <!-- Abstract background elements -->
-    <div class="fixed top-0 right-0 w-[500px] h-[500px] bg-blue-100/30 rounded-full blur-3xl -z-10 -mr-64 -mt-64"></div>
-    <div class="fixed bottom-0 left-0 w-[400px] h-[400px] bg-purple-100/20 rounded-full blur-3xl -z-10 -ml-32 -mb-32"></div>
+<body class="flex min-h-screen relative overflow-x-hidden">
 
     <!-- Sidebar -->
-    <aside class="w-72 bg-[#0F172A] text-white flex flex-col p-8 space-y-10 shadow-2xl fixed h-full z-50">
+    <aside class="w-72 bg-[#e0e5ec] text-slate-600 flex flex-col p-8 space-y-10 shadow-[20px_0_40px_rgba(163,177,198,0.3)] fixed h-full z-50">
         <div class="flex items-center space-x-4">
-            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black text-xl shadow-lg shadow-blue-500/20">S</div>
-            <h2 class="text-2xl font-black tracking-tight">Storyline</h2>
+            <div class="w-10 h-10 neu-button rounded-xl flex items-center justify-center font-black text-xl text-blue-600">S</div>
+            <h2 class="text-2xl font-black tracking-tight text-slate-700">Storyline</h2>
         </div>
-        <nav class="flex-grow space-y-2">
-            <a href="index" class="flex items-center space-x-4 px-4 py-3 rounded-xl bg-blue-600 text-white transition font-bold shadow-lg shadow-blue-500/20">
+        <nav class="flex-grow space-y-4">
+            <a href="index" class="flex items-center space-x-4 px-4 py-3 rounded-xl neu-inset text-blue-600 transition font-bold">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                 <span>Dashboard</span>
             </a>
-            <a href="posts" class="flex items-center space-x-4 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition font-semibold">
+            <a href="posts" class="flex items-center space-x-4 px-4 py-3 rounded-xl neu-button hover:text-blue-600 transition font-semibold">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 4v4h4"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 16h6"></path></svg>
                 <span>Post Manager</span>
             </a>
-            <a href="categories" class="flex items-center space-x-4 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition font-semibold">
+            <a href="categories" class="flex items-center space-x-4 px-4 py-3 rounded-xl neu-button hover:text-blue-600 transition font-semibold">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 11h.01M7 15h.01M13 7h.01M13 11h.01M13 15h.01M17 7h.01M17 11h.01M17 15h.01"></path></svg>
                 <span>Categories</span>
             </a>
-            <a href="settings" class="flex items-center space-x-4 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition font-semibold">
+            <a href="settings" class="flex items-center space-x-4 px-4 py-3 rounded-xl neu-button hover:text-blue-600 transition font-semibold">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                 <span>Settings</span>
             </a>
-            <a href="profile" class="flex items-center space-x-4 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition font-semibold">
+            <a href="profile" class="flex items-center space-x-4 px-4 py-3 rounded-xl neu-button hover:text-blue-600 transition font-semibold">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                 <span>Profile</span>
             </a>
         </nav>
-        <div class="border-t border-slate-800 pt-6">
-            <a href="logout" class="flex items-center space-x-4 px-4 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-400/5 transition font-semibold">
+        <div class="border-t border-slate-300 pt-6">
+            <a href="logout" class="flex items-center space-x-4 px-4 py-3 rounded-xl neu-button text-rose-500 hover:text-rose-600 transition font-semibold">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                 <span>Logout</span>
             </a>
@@ -108,66 +123,66 @@ try {
                 </div>
             <?php endif; ?>
 
-            <header class="flex justify-between items-end mb-16">
+            <header class="flex justify-between items-end mb-20">
                 <div>
-                    <h1 class="text-4xl font-black text-slate-900 tracking-tight mb-2">Overview</h1>
-                    <p class="text-slate-500 font-medium italic">Welcome back! Here's what's happening with your Storyline.</p>
+                    <h1 class="text-5xl font-black text-slate-700 tracking-tighter mb-4">Command Center</h1>
+                    <p class="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">Strategic Narrative Intelligence Dashboard</p>
                 </div>
-                <a href="../index" class="bg-white border-2 border-slate-100 px-6 py-3 rounded-2xl text-slate-600 font-bold hover:bg-slate-50 transition flex items-center space-x-2 shadow-sm">
-                    <span>Visit Live Site</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                <a href="../index" class="neu-button px-8 py-4 rounded-2xl text-slate-600 font-black transition flex items-center space-x-3 group">
+                    <span class="group-hover:text-blue-600">Visit Platform</span>
+                    <svg class="w-5 h-5 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                 </a>
             </header>
 
             <!-- Stats Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-16">
-                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
-                    <span class="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] block mb-4">Total Narrative</span>
-                    <div class="flex items-end space-x-2">
-                        <span class="text-5xl font-black text-slate-900 leading-none"><?php echo $total_posts; ?></span>
-                        <span class="text-slate-400 font-bold mb-1">Stories</span>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-20">
+                <div class="neu-flat p-10 rounded-[3rem] relative overflow-hidden group border border-white/20">
+                    <span class="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em] block mb-6">Narrative Volume</span>
+                    <div class="flex items-baseline space-x-3">
+                        <span class="text-6xl font-extrabold text-slate-700 leading-none"><?php echo $total_posts; ?></span>
+                        <span class="text-slate-400 font-bold text-sm">Units</span>
                     </div>
                 </div>
-                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
-                    <span class="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] block mb-4">Taxonomy</span>
-                    <div class="flex items-end space-x-2">
-                        <span class="text-5xl font-black text-slate-900 leading-none"><?php echo $total_categories; ?></span>
-                        <span class="text-slate-400 font-bold mb-1">Categories</span>
+                <div class="neu-flat p-10 rounded-[3rem] relative overflow-hidden group border border-white/20">
+                    <span class="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em] block mb-6">Taxonomy Depth</span>
+                    <div class="flex items-baseline space-x-3">
+                        <span class="text-6xl font-extrabold text-slate-700 leading-none"><?php echo $total_categories; ?></span>
+                        <span class="text-slate-400 font-bold text-sm">Nodes</span>
                     </div>
                 </div>
-                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
-                    <span class="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] block mb-4">Audience</span>
-                    <div class="flex items-end space-x-2">
-                        <span class="text-5xl font-black text-slate-900 leading-none"><?php echo $total_subscribers; ?></span>
-                        <span class="text-slate-400 font-bold mb-1">Subscribers</span>
+                <div class="neu-flat p-10 rounded-[3rem] relative overflow-hidden group border border-white/20">
+                    <span class="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em] block mb-6">Audience reach</span>
+                    <div class="flex items-baseline space-x-3">
+                        <span class="text-6xl font-extrabold text-slate-700 leading-none"><?php echo $total_subscribers; ?></span>
+                        <span class="text-slate-400 font-bold text-sm">Active</span>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-5 gap-10">
-                <!-- Chart Area -->
-                <div class="lg:col-span-3 bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
-                    <h3 class="text-xl font-black text-slate-900 mb-8 tracking-tight">Content Distribution</h3>
-                    <div class="h-64">
-                        <canvas id="categoryChart"></canvas>
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-12">
+                <!-- Chart Area (Content Distributor) -->
+                <div class="lg:col-span-3 neu-flat p-12 rounded-[4rem] border border-white/30">
+                    <div class="flex justify-between items-center mb-10">
+                        <h3 class="text-2xl font-black text-slate-700 tracking-tighter">Content Distribution</h3>
+                        <div class="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
+                    </div>
+                    <div class="neu-inset p-8 rounded-[2.5rem]">
+                        <div class="h-72">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Quick Actions Area -->
-                <div class="lg:col-span-2 space-y-8">
-                    <div class="bg-[#0F172A] p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden h-full flex flex-col justify-between">
+                <div class="lg:col-span-2 space-y-12">
+                    <div class="neu-flat p-10 rounded-[3rem] text-slate-700 relative overflow-hidden h-full flex flex-col justify-between border border-white/40">
                         <div class="relative z-10">
-                            <h2 class="text-3xl font-black mb-4 leading-tight">Draft your next <br><span class="text-blue-500">masterpiece.</span></h2>
-                            <p class="text-slate-400 font-medium mb-8">Ready to share your story with the world?</p>
+                            <h2 class="text-3xl font-black mb-4 leading-tight tracking-tighter">Draft your next <br><span class="text-blue-600 underline decoration-blue-200 underline-offset-8">masterpiece.</span></h2>
+                            <p class="text-slate-400 font-bold text-sm uppercase tracking-widest mb-12">Narrative Forge</p>
                         </div>
-                        <a href="posts?action=add" class="bg-blue-600 text-white px-8 py-5 rounded-[2rem] font-black text-lg hover:bg-blue-700 transition shadow-xl shadow-blue-500/20 text-center relative z-10">
-                            + Create New Post
+                        <a href="posts?action=add" class="neu-button text-slate-700 px-8 py-6 rounded-[2.5rem] font-black text-xl hover:text-blue-600 transition text-center relative z-10">
+                            + Initialize Story
                         </a>
-                        <!-- Decorative element -->
-                        <div class="absolute bottom-0 right-0 w-48 h-48 bg-blue-600/10 rounded-full -mr-24 -mb-24 blur-3xl"></div>
                     </div>
                 </div>
             </div>
@@ -181,9 +196,10 @@ try {
                         datasets: [{
                             label: 'Posts per Category',
                             data: <?php echo json_encode(array_column($cat_stats, 'count')); ?>,
-                            backgroundColor: '#3B82F6',
-                            borderRadius: 12,
-                            barThickness: 40
+                            backgroundColor: '#4A90E2',
+                            hoverBackgroundColor: '#357ABD',
+                            borderRadius: 20,
+                            barThickness: 32,
                         }]
                     },
                     options: {
@@ -193,8 +209,15 @@ try {
                             legend: { display: false }
                         },
                         scales: {
-                            y: { beginAtZero: true, grid: { display: false }, ticks: { font: { weight: 'bold' } } },
-                            x: { grid: { display: false }, ticks: { font: { weight: 'bold' } } }
+                            y: {
+                                beginAtZero: true,
+                                grid: { display: false },
+                                ticks: { color: '#94a3b8', font: { weight: '600' } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#94a3b8', font: { weight: '600' } }
+                            }
                         }
                     }
                 });
