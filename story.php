@@ -12,7 +12,7 @@ try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $stmt = $pdo->prepare("SELECT p.*, c.name as category_name FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE p.seo_title = ? LIMIT 1");
+    $stmt = $pdo->prepare("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE p.seo_title = ? LIMIT 1");
     $stmt->execute([$title_slug]);
     $post = $stmt->fetch();
 
@@ -66,9 +66,9 @@ $meta_description = !empty($post['meta_description']) ? $post['meta_description'
     <article class="max-w-4xl mx-auto px-6 py-20">
         <header class="text-center space-y-8 mb-16">
             <div class="flex flex-col items-center space-y-4">
-                <span class="bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest">
+                <a href="index?category=<?php echo urlencode($post['category_slug'] ?? ''); ?>" class="bg-blue-600 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition">
                     <?php echo htmlspecialchars($post['category_name'] ?? 'General'); ?>
-                </span>
+                </a>
                 <span class="text-sm font-bold text-slate-400 uppercase tracking-[0.2em]"><?php echo date('M d, Y', strtotime($post['created_at'])); ?></span>
             </div>
             <h1 class="text-5xl md:text-7xl font-black leading-tight tracking-tight text-slate-900">

@@ -17,8 +17,14 @@ try {
     $stmt_nav = $pdo->query("SELECT * FROM categories ORDER BY name ASC LIMIT 5");
     $nav_categories = $stmt_nav->fetchAll();
 
-    // Fetch latest 10 posts with categories
-    $stmt = $pdo->query("SELECT p.*, c.name as category_name FROM posts p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.created_at DESC LIMIT 10");
+    // Category filtering
+    $category_slug = $_GET['category'] ?? null;
+    if ($category_slug) {
+        $stmt = $pdo->prepare("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE c.slug = ? ORDER BY p.created_at DESC LIMIT 10");
+        $stmt->execute([$category_slug]);
+    } else {
+        $stmt = $pdo->query("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.created_at DESC LIMIT 10");
+    }
     $posts = $stmt->fetchAll();
 
     // The first post will be the hero
@@ -60,7 +66,7 @@ function getYouTubeID($url) {
                 <div class="hidden md:flex space-x-6 text-sm font-bold uppercase tracking-widest text-slate-400">
                     <a href="index" class="hover:text-blue-600 transition text-blue-600">All Stories</a>
                     <?php foreach ($nav_categories as $nav_cat): ?>
-                        <a href="#" class="hover:text-blue-600 transition"><?php echo htmlspecialchars($nav_cat['name']); ?></a>
+                        <a href="index?category=<?php echo urlencode($nav_cat['slug']); ?>" class="hover:text-blue-600 transition"><?php echo htmlspecialchars($nav_cat['name']); ?></a>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -83,9 +89,9 @@ function getYouTubeID($url) {
                 <?php else: ?>
                     <div class="w-full aspect-[16/10] bg-slate-100 flex items-center justify-center text-slate-300 rounded-3xl">No Media</div>
                 <?php endif; ?>
-                <div class="absolute top-6 left-6 bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest">
+                <a href="index?category=<?php echo urlencode($hero['category_slug'] ?? ''); ?>" class="absolute top-6 left-6 bg-blue-600 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition">
                     <?php echo htmlspecialchars($hero['category_name'] ?? 'Featured'); ?>
-                </div>
+                </a>
             </div>
             <div class="lg:col-span-5 space-y-6">
                 <span class="text-sm font-bold text-blue-600 uppercase tracking-[0.2em]"><?php echo date('M d, Y', strtotime($hero['created_at'])); ?></span>
@@ -119,9 +125,9 @@ function getYouTubeID($url) {
                     <?php else: ?>
                         <div class="w-full aspect-square bg-slate-50 flex items-center justify-center text-slate-200">No Image</div>
                     <?php endif; ?>
-                    <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-blue-600">
+                    <a href="index?category=<?php echo urlencode($post['category_slug'] ?? ''); ?>" class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-blue-600 hover:bg-white transition">
                         <?php echo htmlspecialchars($post['category_name'] ?? 'General'); ?>
-                    </div>
+                    </a>
                 </div>
                 <div class="space-y-4">
                     <span class="text-xs font-black text-slate-400 uppercase tracking-widest block"><?php echo date('M d, Y', strtotime($post['created_at'])); ?></span>

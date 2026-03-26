@@ -9,12 +9,16 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     exit;
 }
 require_once '../includes/config.php';
+require_once '../includes/functions.php';
 
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            die("CSRF token validation failed.");
+        }
         $keywords = $_POST['meta_keywords'];
         $description = $_POST['meta_description'];
         $smtp_host = $_POST['smtp_host'];
@@ -86,6 +90,7 @@ try {
             <?php endif; ?>
 
             <form method="post" class="space-y-8">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                 <!-- SEO Section -->
                 <section class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6">
                     <h2 class="text-xl font-bold text-slate-800 flex items-center"><span class="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mr-3 text-sm">SEO</span> Search Engine Optimization</h2>

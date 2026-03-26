@@ -26,6 +26,9 @@ try {
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            die("CSRF token validation failed.");
+        }
         $title = $_POST['title'];
         $content = $_POST['content'];
         $seo_title = $_POST['seo_title'];
@@ -110,6 +113,7 @@ try {
             </header>
 
             <form method="post" enctype="multipart/form-data" class="space-y-8">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                 <input type="hidden" name="existing_image" value="<?php echo htmlspecialchars($post['featured_image']); ?>">
                 <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6">
                     <div>

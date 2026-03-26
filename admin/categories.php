@@ -9,6 +9,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     exit;
 }
 require_once '../includes/config.php';
+require_once '../includes/functions.php';
 
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
@@ -25,6 +26,9 @@ try {
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            die("CSRF token validation failed.");
+        }
         $name = $_POST['name'];
         $slug = $_POST['slug'];
 
@@ -79,6 +83,7 @@ try {
             </header>
 
             <form method="post" class="space-y-8">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                 <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Category Name</label>
