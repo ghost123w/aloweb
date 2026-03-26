@@ -8,6 +8,11 @@ if (!file_exists(__DIR__ . '/includes/config.php')) {
 
 require_once __DIR__ . '/includes/config.php';
 
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    die("Access denied. Please log in as an administrator to run this script.");
+}
+
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

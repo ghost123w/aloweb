@@ -74,18 +74,28 @@ try {
                 $message = "Profile updated successfully.";
             }
         } elseif (isset($_POST['change_password'])) {
+            $current_pass = $_POST['current_password'];
             $new_pass = $_POST['new_password'];
             $confirm_pass = $_POST['confirm_password'];
 
-            if ($new_pass === $confirm_pass) {
-                $hashed_pass = password_hash($new_pass, PASSWORD_BCRYPT);
-                $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE email = ?");
-                $stmt->execute([$hashed_pass, $admin_email]);
+            // Fetch current password from DB
+            $stmt = $pdo->prepare("SELECT password FROM users WHERE email = ?");
+            $stmt->execute([$admin_email]);
+            $user_data = $stmt->fetch();
 
-                sendNotification($admin_email, "Password Changed", "Your admin password was changed at " . date('Y-m-d H:i'));
-                $message = "Password updated successfully.";
+            if ($user_data && password_verify($current_pass, $user_data['password'])) {
+                if ($new_pass === $confirm_pass) {
+                    $hashed_pass = password_hash($new_pass, PASSWORD_BCRYPT);
+                    $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE email = ?");
+                    $stmt->execute([$hashed_pass, $admin_email]);
+
+                    sendNotification($admin_email, "Password Changed", "Your admin password was changed at " . date('Y-m-d H:i'));
+                    $message = "Password updated successfully.";
+                } else {
+                    $error = "New passwords do not match.";
+                }
             } else {
-                $error = "Passwords do not match.";
+                $error = "Incorrect current password.";
             }
         }
     }
@@ -245,6 +255,13 @@ try {
                         <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                         <div class="space-y-6">
                             <div class="space-y-3">
+                                <label class="block text-sm font-bold text-slate-700 ml-1 uppercase tracking-wider">Current Password</label>
+                                <div class="relative">
+                                    <input type="password" name="current_password" required class="w-full px-6 py-5 bg-slate-50 border-2 border-transparent rounded-3xl focus:border-blue-500 focus:bg-white transition-all duration-300 outline-none font-medium text-slate-700 shadow-inner pl-14" placeholder="••••••••">
+                                    <div class="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div>
+                                </div>
+                            </div>
+                            <div class="space-y-3">
                                 <label class="block text-sm font-bold text-slate-700 ml-1 uppercase tracking-wider">New Password</label>
                                 <div class="relative">
                                     <input type="password" name="new_password" required class="w-full px-6 py-5 bg-slate-50 border-2 border-transparent rounded-3xl focus:border-blue-500 focus:bg-white transition-all duration-300 outline-none font-medium text-slate-700 shadow-inner pl-14" placeholder="••••••••">
@@ -252,7 +269,7 @@ try {
                                 </div>
                             </div>
                             <div class="space-y-3">
-                                <label class="block text-sm font-bold text-slate-700 ml-1 uppercase tracking-wider">Confirm Password</label>
+                                <label class="block text-sm font-bold text-slate-700 ml-1 uppercase tracking-wider">Confirm New Password</label>
                                 <div class="relative">
                                     <input type="password" name="confirm_password" required class="w-full px-6 py-5 bg-slate-50 border-2 border-transparent rounded-3xl focus:border-blue-500 focus:bg-white transition-all duration-300 outline-none font-medium text-slate-700 shadow-inner pl-14" placeholder="••••••••">
                                     <div class="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg></div>

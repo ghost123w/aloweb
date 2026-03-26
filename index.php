@@ -12,6 +12,7 @@ try {
 
     $stmt = $pdo->query("SELECT * FROM settings LIMIT 1");
     $settings = $stmt->fetch();
+    if (!$settings) $settings = [];
 
     // Check if categories table exists
     $catTableCheck = $pdo->query("SHOW TABLES LIKE 'categories'")->rowCount() > 0;

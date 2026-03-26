@@ -25,7 +25,10 @@ try {
     $action = $_GET['action'] ?? 'list';
     $id = $_GET['id'] ?? null;
 
-    if ($action === 'delete' && $id) {
+    if ($action === 'delete' && $id && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            die("CSRF token validation failed.");
+        }
         $stmt = $pdo->prepare("DELETE FROM categories WHERE id = ?");
         $stmt->execute([$id]);
         header("Location: categories");
@@ -231,7 +234,10 @@ try {
                             </td>
                             <td class="px-8 py-6 text-right space-x-3">
                                 <a href="categories?action=edit&id=<?php echo $cat['id']; ?>" class="text-blue-600 font-bold hover:text-blue-800 transition">Edit</a>
-                                <a href="categories?action=delete&id=<?php echo $cat['id']; ?>" onclick="return confirm('Delete this category? Stories will be uncategorized.')" class="text-red-400 font-bold hover:text-red-600 transition">Delete</a>
+                                <form action="categories?action=delete&id=<?php echo $cat['id']; ?>" method="POST" onsubmit="return confirm('Delete this category? Stories will be uncategorized.')" class="inline">
+                                    <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
+                                    <button type="submit" class="text-red-400 font-bold hover:text-red-600 transition">Delete</button>
+                                </form>
                             </td>
                         </tr>
                         <?php endforeach; ?>

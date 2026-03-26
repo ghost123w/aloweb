@@ -14,6 +14,7 @@ function sendNotification($to, $subject, $message) {
         $stmt = $pdo->prepare("SELECT * FROM settings LIMIT 1");
         $stmt->execute();
         $settings = $stmt->fetch();
+        if (!$settings) $settings = [];
 
         $mail = new PHPMailer(true);
 

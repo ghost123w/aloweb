@@ -25,7 +25,10 @@ try {
     $action = $_GET['action'] ?? 'list';
     $id = $_GET['id'] ?? null;
 
-    if ($action === 'delete' && $id) {
+    if ($action === 'delete' && $id && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            die("CSRF token validation failed.");
+        }
         $stmt = $pdo->prepare("DELETE FROM posts WHERE id = ?");
         $stmt->execute([$id]);
         header("Location: posts");
@@ -155,19 +158,81 @@ try {
                         <label class="block text-sm font-semibold text-gray-700 mb-2">SEO URL Slug</label>
                         <input type="text" name="seo_title" value="<?php echo htmlspecialchars($post['seo_title']); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-500 font-mono" placeholder="my-awesome-story">
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Featured Image</label>
-                            <?php if ($post['featured_image']): ?>
-                                <img src="../uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full h-32 object-cover rounded-xl mb-4 border border-slate-100">
-                            <?php endif; ?>
-                            <input type="file" name="featured_image" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition">
+                            <div class="space-y-4">
+                                <div id="image-preview-container" class="relative group">
+                                    <div id="image-preview" class="w-full aspect-video rounded-3xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden flex items-center justify-center relative">
+                                        <?php if ($post['featured_image']): ?>
+                                            <img src="../uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full h-full object-cover">
+                                        <?php else: ?>
+                                            <div class="text-center p-6">
+                                                <div class="text-slate-300 mb-2 flex justify-center">
+                                                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                </div>
+                                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Image Preview</p>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <button type="button" id="remove-image" class="absolute top-4 right-4 bg-red-600 text-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition duration-300 hover:bg-red-700 <?php echo $post['featured_image'] ? '' : 'hidden'; ?>">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </button>
+                                </div>
+                                <input type="file" name="featured_image" id="post-image" class="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-black file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition cursor-pointer shadow-xl shadow-blue-500/20">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">YouTube Video URL</label>
-                            <input type="text" name="youtube_url" value="<?php echo htmlspecialchars($post['youtube_url']); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="https://youtube.com/watch?v=...">
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">YouTube Video URL</label>
+                                <input type="text" name="youtube_url" value="<?php echo htmlspecialchars($post['youtube_url']); ?>" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="https://youtube.com/watch?v=...">
+                                <p class="text-[10px] text-slate-400 mt-2 italic">Provide a link to embed a video instead of an image.</p>
+                            </div>
+                            <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                                <h4 class="text-blue-800 font-bold text-sm mb-2 flex items-center">
+                                    <span class="mr-2">💡</span> Pro Tip
+                                </h4>
+                                <p class="text-blue-700 text-xs leading-relaxed">
+                                    Use a high-quality 16:9 aspect ratio image for the best visual impact on the homepage hero section.
+                                </p>
+                            </div>
                         </div>
                     </div>
+
+                    <script>
+                        const postImage = document.getElementById('post-image');
+                        const preview = document.getElementById('image-preview');
+                        const removeBtn = document.getElementById('remove-image');
+                        const existingImageInput = document.getElementsByName('existing_image')[0];
+
+                        postImage.addEventListener('change', function(e) {
+                            const file = e.target.files[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = function(event) {
+                                    preview.innerHTML = `<img src="${event.target.result}" class="w-full h-full object-cover">`;
+                                    preview.classList.remove('border-dashed');
+                                    removeBtn.classList.remove('hidden');
+                                };
+                                reader.readAsDataURL(file);
+                            }
+                        });
+
+                        removeBtn.addEventListener('click', function() {
+                            postImage.value = '';
+                            existingImageInput.value = '';
+                            preview.innerHTML = `
+                                <div class="text-center p-6">
+                                    <div class="text-slate-300 mb-2 flex justify-center">
+                                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </div>
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Image Preview</p>
+                                </div>
+                            `;
+                            preview.classList.add('border-dashed');
+                            removeBtn.classList.add('hidden');
+                        });
+                    </script>
                     <div class="bg-slate-50 p-6 rounded-2xl space-y-4">
                         <h3 class="font-bold text-slate-800">SEO Metadata</h3>
                         <div>
@@ -232,55 +297,45 @@ try {
                 <a href="posts?action=add" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-blue-700 transition shadow-xl shadow-blue-500/10">+ New Story</a>
             </header>
 
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 border-b border-slate-100">
-                            <th class="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Story Info</th>
-                            <th class="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Category</th>
-                            <th class="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Date</th>
-                            <th class="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-50">
-                        <?php if (empty($posts)): ?>
-                            <tr>
-                                <td colspan="4" class="px-8 py-12 text-center text-slate-400 font-medium">No stories found. Start publishing today!</td>
-                            </tr>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <?php if (empty($posts)): ?>
+                    <div class="col-span-full bg-white p-20 rounded-[3rem] text-center border-2 border-dashed border-slate-200">
+                        <p class="text-slate-400 font-black text-xl italic">The archives are empty. Ready to publish?</p>
+                    </div>
+                <?php endif; ?>
+
+                <?php foreach ($posts as $post): ?>
+                <div class="bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-blue-500/5 transition duration-500 flex flex-col group">
+                    <div class="relative aspect-video rounded-3xl overflow-hidden mb-6 bg-slate-50">
+                        <?php if ($post['featured_image']): ?>
+                            <img src="../uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                        <?php else: ?>
+                            <div class="w-full h-full flex items-center justify-center text-slate-200 italic font-black text-sm uppercase">No Featured Image</div>
                         <?php endif; ?>
-                        <?php foreach ($posts as $post): ?>
-                        <tr class="hover:bg-slate-50/50 transition">
-                            <td class="px-8 py-6">
-                                <div class="flex items-center space-x-4">
-                                    <div class="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
-                                        <?php if ($post['featured_image']): ?>
-                                            <img src="../uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full h-full object-cover">
-                                        <?php else: ?>
-                                            <div class="w-full h-full flex items-center justify-center text-slate-300"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div>
-                                        <div class="font-bold text-slate-800"><?php echo htmlspecialchars($post['title']); ?></div>
-                                        <div class="text-xs text-slate-400 font-mono">/<?php echo htmlspecialchars($post['seo_title']); ?></div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-8 py-6 text-center">
-                                <span class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-bold">
-                                    <?php echo htmlspecialchars($post['category_name'] ?? 'Uncategorized'); ?>
-                                </span>
-                            </td>
-                            <td class="px-8 py-6 text-center text-slate-500 font-medium text-sm">
-                                <?php echo date('M d, Y', strtotime($post['created_at'])); ?>
-                            </td>
-                            <td class="px-8 py-6 text-right space-x-3">
-                                <a href="posts?action=edit&id=<?php echo $post['id']; ?>" class="text-blue-600 font-bold hover:text-blue-800 transition">Edit</a>
-                                <a href="posts?action=delete&id=<?php echo $post['id']; ?>" onclick="return confirm('Archive this story forever?')" class="text-red-400 font-bold hover:text-red-600 transition">Delete</a>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-blue-600 shadow-sm">
+                            <?php echo htmlspecialchars($post['category_name'] ?? 'Uncategorized'); ?>
+                        </div>
+                    </div>
+
+                    <div class="flex-grow space-y-3 px-2">
+                        <div class="flex justify-between items-start">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]"><?php echo date('M d, Y', strtotime($post['created_at'])); ?></span>
+                        </div>
+                        <h3 class="text-xl font-black text-slate-800 leading-tight line-clamp-2"><?php echo htmlspecialchars($post['title']); ?></h3>
+                        <p class="text-xs text-slate-400 font-mono truncate">/<?php echo htmlspecialchars($post['seo_title']); ?></p>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between px-2">
+                        <a href="posts?action=edit&id=<?php echo $post['id']; ?>" class="bg-slate-900 text-white px-6 py-2.5 rounded-2xl text-xs font-black hover:bg-blue-600 transition duration-300">Edit Story</a>
+                            <form action="posts?action=delete&id=<?php echo $post['id']; ?>" method="POST" onsubmit="return confirm('Archive this story forever?')" class="inline">
+                                <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
+                                <button type="submit" class="text-red-400 p-2 hover:bg-red-50 rounded-xl transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                            </form>
+                    </div>
+                </div>
+                <?php endforeach; ?>
             </div>
         </div>
     </main>

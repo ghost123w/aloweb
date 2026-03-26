@@ -16,6 +16,7 @@ if ($step === 1) {
     $php_version = phpversion();
     $pdo_loaded = extension_loaded('pdo_mysql');
     $openssl_loaded = extension_loaded('openssl');
+    $fileinfo_loaded = extension_loaded('fileinfo');
     $errors = [];
 
     if (version_compare($php_version, '8.0.0', '<')) {
@@ -26,6 +27,9 @@ if ($step === 1) {
     }
     if (!$openssl_loaded) {
         $errors[] = "The 'openssl' extension is required.";
+    }
+    if (!$fileinfo_loaded) {
+        $errors[] = "The 'fileinfo' extension is required for secure file uploads.";
     }
 
     echo "<h1 class='text-2xl font-bold mb-4 text-gray-800'>Step 1: System Requirements</h1>";

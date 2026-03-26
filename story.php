@@ -31,6 +31,7 @@ try {
 
     $stmt = $pdo->query("SELECT * FROM settings LIMIT 1");
     $settings = $stmt->fetch();
+    if (!$settings) $settings = [];
 
 } catch (PDOException $e) {
     die("Database connection failed.");
