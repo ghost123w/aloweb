@@ -32,6 +32,9 @@ try {
         $title = $_POST['title'];
         $content = $_POST['content'];
         $seo_title = $_POST['seo_title'];
+        if (empty($seo_title)) {
+            $seo_title = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title)));
+        }
         $youtube_url = $_POST['youtube_url'];
         $category_id = !empty($_POST['category_id']) ? $_POST['category_id'] : null;
         $meta_title = $_POST['meta_title'];
@@ -43,11 +46,17 @@ try {
         if (isset($_FILES['featured_image']) && $_FILES['featured_image']['error'] === UPLOAD_ERR_OK) {
             $upload_dir = '../uploads/';
             $file_ext = strtolower(pathinfo($_FILES['featured_image']['name'], PATHINFO_EXTENSION));
-            $allowed_ext = ['jpg', 'jpeg', 'png', 'webp'];
+            $allowed_ext = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
             if (in_array($file_ext, $allowed_ext)) {
-                $new_file_name = 'post_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $file_ext;
-                if (move_uploaded_file($_FILES['featured_image']['tmp_name'], $upload_dir . $new_file_name)) {
-                    $featured_image = $new_file_name;
+                $finfo = new finfo(FILEINFO_MIME_TYPE);
+                $mime_type = $finfo->file($_FILES['featured_image']['tmp_name']);
+                $allowed_mime = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+                if (in_array($mime_type, $allowed_mime)) {
+                    $new_file_name = 'post_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $file_ext;
+                    if (move_uploaded_file($_FILES['featured_image']['tmp_name'], $upload_dir . $new_file_name)) {
+                        $featured_image = $new_file_name;
+                    }
                 }
             }
         }
@@ -60,9 +69,13 @@ try {
             $stmt->execute([$title, $content, $seo_title, $featured_image, $youtube_url, $category_id, $meta_title, $meta_keywords, $meta_description]);
 
             // Notification for new post to subscribers
+            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+            $host = $_SERVER['HTTP_HOST'];
+            $site_url = "$protocol://$host";
+
             $stmt_sub = $pdo->query("SELECT email FROM subscribers");
             while ($subscriber = $stmt_sub->fetch()) {
-                sendNotification($subscriber['email'], "New Story: $title", "Check out our new story: $title at " . "http://yourdomain.com/story?title=" . urlencode($seo_title));
+                sendNotification($subscriber['email'], "New Story: $title", "Check out our new story: $title at " . "$site_url/story?title=" . urlencode($seo_title));
             }
         }
         header("Location: posts");

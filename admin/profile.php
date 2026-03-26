@@ -25,20 +25,26 @@ try {
             $bio = $_POST['bio'];
             $profile_picture = "";
 
+            if (isset($_POST['remove_pic']) && $_POST['remove_pic'] == '1') {
+                $stmt = $pdo->prepare("UPDATE users SET profile_picture = NULL WHERE email = ?");
+                $stmt->execute([$admin_email]);
+                $message = "Profile picture removed.";
+            }
+
             if (isset($_FILES['profile_pic']) && $_FILES['profile_pic']['error'] === UPLOAD_ERR_OK) {
                 $upload_dir = '../uploads/';
                 if (!is_dir($upload_dir)) {
                     mkdir($upload_dir, 0755, true);
                 }
 
-                $allowed_ext = ['jpg', 'jpeg', 'png', 'gif'];
+                $allowed_ext = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
                 $file_name = $_FILES['profile_pic']['name'];
                 $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 
                 if (in_array($file_ext, $allowed_ext)) {
                     $finfo = new finfo(FILEINFO_MIME_TYPE);
                     $mime_type = $finfo->file($_FILES['profile_pic']['tmp_name']);
-                    $allowed_mime = ['image/jpeg', 'image/png', 'image/gif'];
+                    $allowed_mime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
                     if (in_array($mime_type, $allowed_mime)) {
                         $new_file_name = time() . '_' . bin2hex(random_bytes(8)) . '.' . $file_ext;
@@ -204,6 +210,11 @@ try {
                                     <input type="file" name="profile_pic" id="profile-input" class="hidden" onchange="previewImage(this)">
                                 </label>
                             </div>
+                            <div class="mt-4 flex space-x-2">
+                                <button type="button" onclick="document.getElementById('profile-input').click()" class="text-xs font-bold bg-white text-slate-600 px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-50">Change</button>
+                                <button type="button" onclick="removeImage()" class="text-xs font-bold bg-white text-rose-600 px-3 py-1 rounded-lg border border-slate-200 hover:bg-rose-50">Remove</button>
+                                <input type="hidden" name="remove_pic" id="remove-pic-input" value="0">
+                            </div>
                             <div class="flex-grow text-center md:text-left">
                                 <h3 class="text-xl font-bold text-slate-900 mb-1"><?php echo htmlspecialchars($user['email'] ?? ''); ?></h3>
                                 <p class="text-slate-400 font-semibold text-sm uppercase tracking-widest">Platform Administrator</p>
@@ -273,9 +284,27 @@ try {
                     preview.src = e.target.result;
                     preview.classList.remove('hidden');
                     if (placeholder) placeholder.classList.add('hidden');
+                    document.getElementById('remove-pic-input').value = '0';
                 }
                 reader.readAsDataURL(input.files[0]);
             }
+        }
+
+        function removeImage() {
+            const preview = document.getElementById('profile-preview');
+            const placeholder = document.getElementById('profile-placeholder');
+            const input = document.getElementById('profile-input');
+
+            input.value = '';
+            if (preview) preview.classList.add('hidden');
+            if (placeholder) {
+                placeholder.classList.remove('hidden');
+            } else {
+                // If no placeholder exists in DOM, we should show the initials or default
+                location.reload(); // Simplest way to reset to DB state if we don't want to complexify JS
+                return;
+            }
+            document.getElementById('remove-pic-input').value = '1';
         }
     </script>
 </body>
