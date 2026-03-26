@@ -18,9 +18,21 @@ try {
     $pdo->exec("CREATE TABLE IF NOT EXISTS categories (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
-        slug VARCHAR(100) NOT NULL UNIQUE
+        slug VARCHAR(100) NOT NULL UNIQUE,
+        image VARCHAR(255) NULL
     )");
     echo "Categories table checked/created.\n";
+
+    // 1.1 Ensure image column exists in categories
+    $catCols = [];
+    $stmt = $pdo->query("SHOW COLUMNS FROM categories");
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $catCols[] = $row['Field'];
+    }
+    if (!in_array('image', $catCols)) {
+        $pdo->exec("ALTER TABLE categories ADD COLUMN image VARCHAR(255) NULL AFTER slug");
+        echo "Column 'image' added to categories table.\n";
+    }
 
     // 2. Update Posts Table
     $columnsToAdd = [

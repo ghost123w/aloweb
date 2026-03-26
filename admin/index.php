@@ -15,10 +15,15 @@ try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Check for categories table
+    // Check for categories table and image column
     $stmt = $pdo->query("SHOW TABLES LIKE 'categories'");
     if ($stmt->rowCount() == 0) {
         $migration_needed = true;
+    } else {
+        $stmtCol = $pdo->query("SHOW COLUMNS FROM categories LIKE 'image'");
+        if ($stmtCol->rowCount() == 0) {
+            $migration_needed = true;
+        }
     }
 } catch (PDOException $e) {
     // Connection error handled elsewhere or ignore for now

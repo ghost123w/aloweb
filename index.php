@@ -64,6 +64,8 @@ function getYouTubeID($url) {
     <style>
         body { font-family: 'Inter', sans-serif; }
         h1, h2, h3 { font-family: 'Playfair Display', serif; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fadeIn { animation: fadeIn 0.8s ease-out forwards; }
     </style>
 </head>
 <body class="bg-white text-slate-900 overflow-x-hidden">
@@ -89,6 +91,27 @@ function getYouTubeID($url) {
     <main class="max-w-7xl mx-auto px-6 py-12">
 
         <?php if ($hero): ?>
+        <!-- Categories Carousel/Grid -->
+        <?php if (!empty($nav_categories)): ?>
+        <section class="mb-20 animate-fadeIn">
+            <h3 class="text-sm font-black uppercase tracking-[0.3em] text-slate-400 mb-8 text-center">Explore by Category</h3>
+            <div class="flex flex-wrap justify-center gap-8">
+                <?php foreach ($nav_categories as $cat): ?>
+                    <a href="index?category=<?php echo urlencode($cat['slug']); ?>" class="group relative w-44 h-44 rounded-[2.5rem] overflow-hidden shadow-xl hover:shadow-blue-500/20 transition duration-500 hover:-translate-y-2">
+                        <?php if (!empty($cat['image'])): ?>
+                            <img src="uploads/<?php echo htmlspecialchars($cat['image']); ?>" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                        <?php else: ?>
+                            <div class="w-full h-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-blue-50 transition duration-500 font-black text-4xl">#</div>
+                        <?php endif; ?>
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-80 group-hover:opacity-100 transition duration-500 flex items-end p-6">
+                            <span class="text-white font-black text-lg tracking-tight"><?php echo htmlspecialchars($cat['name']); ?></span>
+                        </div>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </section>
+        <?php endif; ?>
+
         <!-- Hero Section -->
         <section class="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20 items-center">
             <div class="lg:col-span-7 relative group overflow-hidden rounded-3xl">
