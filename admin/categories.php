@@ -41,9 +41,29 @@ try {
         }
         $name = $_POST['name'];
         $slug = $_POST['slug'];
+        if (empty($slug)) {
+            $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));
+        }
         $image = $_POST['existing_image'] ?? '';
 
-        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        if (isset($_POST['remove_image']) && $_POST['remove_image'] == '1') {
+            $image = '';
+        }
+
+        // Check for duplicate slug
+        if ($id) {
+            $stmt_check = $pdo->prepare("SELECT id FROM categories WHERE slug = ? AND id != ?");
+            $stmt_check->execute([$slug, $id]);
+        } else {
+            $stmt_check = $pdo->prepare("SELECT id FROM categories WHERE slug = ?");
+            $stmt_check->execute([$slug]);
+        }
+
+        if ($stmt_check->rowCount() > 0) {
+            $error = "The slug '$slug' is already in use by another category.";
+        }
+
+        if (!isset($error) && isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             $upload_dir = '../uploads/';
             $file_ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
             $allowed_ext = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
@@ -61,15 +81,17 @@ try {
             }
         }
 
-        if ($id) {
-            $stmt = $pdo->prepare("UPDATE categories SET name = ?, slug = ?, image = ? WHERE id = ?");
-            $stmt->execute([$name, $slug, $image, $id]);
-        } else {
-            $stmt = $pdo->prepare("INSERT INTO categories (name, slug, image) VALUES (?, ?, ?)");
-            $stmt->execute([$name, $slug, $image]);
+        if (!isset($error)) {
+            if ($id) {
+                $stmt = $pdo->prepare("UPDATE categories SET name = ?, slug = ?, image = ? WHERE id = ?");
+                $stmt->execute([$name, $slug, $image, $id]);
+            } else {
+                $stmt = $pdo->prepare("INSERT INTO categories (name, slug, image) VALUES (?, ?, ?)");
+                $stmt->execute([$name, $slug, $image]);
+            }
+            header("Location: categories");
+            exit;
         }
-        header("Location: categories");
-        exit;
     }
 
     if ($action === 'edit' || $action === 'add') {
@@ -103,6 +125,11 @@ try {
 
     <main class="flex-grow p-10 overflow-auto">
         <div class="max-w-4xl mx-auto">
+            <?php if (isset($error)): ?>
+                <div class="bg-red-50 text-red-600 p-4 rounded-xl mb-6 border border-red-100 font-bold">
+                    <?php echo $error; ?>
+                </div>
+            <?php endif; ?>
             <header class="mb-10 flex justify-between items-center">
                 <div>
                     <h1 class="text-3xl font-black text-slate-800"><?php echo $id ? 'Edit Category' : 'New Category'; ?></h1>
@@ -121,37 +148,57 @@ try {
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Slug</label>
-                            <input type="text" name="slug" value="<?php echo htmlspecialchars($category['slug']); ?>" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-500 font-mono" placeholder="category-slug">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Slug (Optional)</label>
+                            <input type="text" name="slug" value="<?php echo htmlspecialchars($category['slug']); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-500 font-mono" placeholder="category-slug">
+                            <p class="text-[10px] text-slate-400 mt-2 italic">Leave blank to auto-generate from name.</p>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Category Image</label>
                             <div class="flex items-center space-x-6">
-                                <div id="image-preview" class="w-24 h-24 rounded-2xl bg-slate-100 overflow-hidden border-2 border-slate-200 flex-shrink-0 relative">
-                                    <?php if ($category['image']): ?>
-                                        <img src="../uploads/<?php echo htmlspecialchars($category['image']); ?>" class="w-full h-full object-cover">
-                                    <?php else: ?>
-                                        <div class="w-full h-full flex items-center justify-center text-slate-300 text-xs">Preview</div>
-                                    <?php endif; ?>
+                                <div id="image-preview-container" class="relative group">
+                                    <div id="image-preview" class="w-24 h-24 rounded-2xl bg-slate-100 overflow-hidden border-2 border-slate-200 flex-shrink-0 flex items-center justify-center relative">
+                                        <?php if ($category['image']): ?>
+                                            <img src="../uploads/<?php echo htmlspecialchars($category['image']); ?>" class="w-full h-full object-cover">
+                                        <?php else: ?>
+                                            <div class="w-full h-full flex items-center justify-center text-slate-300 text-xs font-bold uppercase">No Image</div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <button type="button" id="remove-image-btn" class="absolute -top-2 -right-2 bg-red-600 text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition duration-300 hover:bg-red-700 <?php echo $category['image'] ? '' : 'hidden'; ?>">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </button>
                                 </div>
                                 <div class="flex-grow">
-                                    <input type="file" name="image" id="cat-image" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition cursor-pointer">
-                                    <p class="text-[10px] text-slate-400 mt-2">Recommended: Square image, max 2MB.</p>
+                                    <input type="file" name="image" id="cat-image" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-black file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition cursor-pointer">
+                                    <p class="text-[10px] text-slate-400 mt-2 font-medium italic">Recommended: Square image, max 2MB. Preview updates instantly.</p>
+                                    <input type="hidden" name="remove_image" id="remove-image-input" value="0">
                                 </div>
                             </div>
                         </div>
 
                         <script>
-                            document.getElementById('cat-image').addEventListener('change', function(e) {
-                                const preview = document.getElementById('image-preview');
+                            const catImage = document.getElementById('cat-image');
+                            const preview = document.getElementById('image-preview');
+                            const removeBtn = document.getElementById('remove-image-btn');
+                            const removeInput = document.getElementById('remove-image-input');
+
+                            catImage.addEventListener('change', function(e) {
                                 const file = e.target.files[0];
                                 if (file) {
                                     const reader = new FileReader();
                                     reader.onload = function(event) {
                                         preview.innerHTML = `<img src="${event.target.result}" class="w-full h-full object-cover">`;
+                                        removeBtn.classList.remove('hidden');
+                                        removeInput.value = '0';
                                     };
                                     reader.readAsDataURL(file);
                                 }
+                            });
+
+                            removeBtn.addEventListener('click', function() {
+                                catImage.value = '';
+                                removeInput.value = '1';
+                                preview.innerHTML = '<div class="w-full h-full flex items-center justify-center text-slate-300 text-xs font-bold uppercase">No Image</div>';
+                                removeBtn.classList.add('hidden');
                             });
                         </script>
                     </div>
@@ -200,49 +247,39 @@ try {
                 <a href="categories?action=add" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-blue-700 transition shadow-xl shadow-blue-500/10">+ New Category</a>
             </header>
 
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 border-b border-slate-100">
-                            <th class="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Category</th>
-                            <th class="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Slug</th>
-                            <th class="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-50">
-                        <?php if (empty($categories)): ?>
-                            <tr>
-                                <td colspan="3" class="px-8 py-12 text-center text-slate-400 font-medium">No categories found.</td>
-                            </tr>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <?php if (empty($categories)): ?>
+                    <div class="col-span-full bg-white p-20 rounded-[3rem] text-center border-2 border-dashed border-slate-200">
+                        <p class="text-slate-400 font-black text-xl italic tracking-tight">No taxonomies defined yet.</p>
+                    </div>
+                <?php endif; ?>
+
+                <?php foreach ($categories as $cat): ?>
+                <div class="bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-blue-500/5 transition duration-500 flex flex-col group relative">
+                    <div class="relative w-20 h-20 rounded-3xl overflow-hidden mb-6 bg-slate-50 mx-auto ring-4 ring-slate-50 group-hover:ring-blue-50 transition duration-500">
+                        <?php if ($cat['image']): ?>
+                            <img src="../uploads/<?php echo htmlspecialchars($cat['image']); ?>" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                        <?php else: ?>
+                            <div class="w-full h-full flex items-center justify-center text-slate-200 font-black text-2xl">#</div>
                         <?php endif; ?>
-                        <?php foreach ($categories as $cat): ?>
-                        <tr class="hover:bg-slate-50/50 transition">
-                            <td class="px-8 py-6 font-bold text-slate-800">
-                                <div class="flex items-center space-x-4">
-                                    <div class="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
-                                        <?php if ($cat['image']): ?>
-                                            <img src="../uploads/<?php echo htmlspecialchars($cat['image']); ?>" class="w-full h-full object-cover">
-                                        <?php else: ?>
-                                            <div class="w-full h-full flex items-center justify-center text-slate-300">#</div>
-                                        <?php endif; ?>
-                                    </div>
-                                    <span><?php echo htmlspecialchars($cat['name']); ?></span>
-                                </div>
-                            </td>
-                            <td class="px-8 py-6 text-center text-slate-500 font-mono text-sm">
-                                <?php echo htmlspecialchars($cat['slug']); ?>
-                            </td>
-                            <td class="px-8 py-6 text-right space-x-3">
-                                <a href="categories?action=edit&id=<?php echo $cat['id']; ?>" class="text-blue-600 font-bold hover:text-blue-800 transition">Edit</a>
-                                <form action="categories?action=delete&id=<?php echo $cat['id']; ?>" method="POST" onsubmit="return confirm('Delete this category? Stories will be uncategorized.')" class="inline">
-                                    <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
-                                    <button type="submit" class="text-red-400 font-bold hover:text-red-600 transition">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                    </div>
+
+                    <div class="text-center space-y-2 mb-8">
+                        <h3 class="text-xl font-black text-slate-800 leading-tight"><?php echo htmlspecialchars($cat['name']); ?></h3>
+                        <p class="text-xs text-slate-400 font-mono truncate px-4">/<?php echo htmlspecialchars($cat['slug']); ?></p>
+                    </div>
+
+                    <div class="mt-auto flex items-center justify-center space-x-4 pt-6 border-t border-slate-50">
+                        <a href="categories?action=edit&id=<?php echo $cat['id']; ?>" class="bg-slate-900 text-white px-6 py-2 rounded-2xl text-xs font-black hover:bg-blue-600 transition duration-300 shadow-lg shadow-black/5">Edit</a>
+                        <form action="categories?action=delete&id=<?php echo $cat['id']; ?>" method="POST" onsubmit="return confirm('Delete this category? Stories will be uncategorized.')" class="inline">
+                            <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
+                            <button type="submit" class="text-red-400 p-2 hover:bg-red-50 rounded-xl transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <?php endforeach; ?>
             </div>
         </div>
     </main>
