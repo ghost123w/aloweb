@@ -1,0 +1,79 @@
+[Fri Mar 27 06:18:13 2026] PHP 8.3.6 Development Server (http://0.0.0.0:8000) started
+[Fri Mar 27 06:18:41 2026] 127.0.0.1:35206 Accepted
+[Fri Mar 27 06:18:41 2026] PHP Warning:  Undefined variable $nav_categories in /app/index.php on line 85
+[Fri Mar 27 06:18:41 2026] PHP Fatal error:  Uncaught TypeError: array_slice(): Argument #1 ($array) must be of type array, null given in /app/index.php:85
+Stack trace:
+#0 /app/index.php(85): array_slice()
+#1 {main}
+  thrown in /app/index.php on line 85
+[Fri Mar 27 06:18:41 2026] 127.0.0.1:35206 [500]: GET / - Uncaught TypeError: array_slice(): Argument #1 ($array) must be of type array, null given in /app/index.php:85
+Stack trace:
+#0 /app/index.php(85): array_slice()
+#1 {main}
+  thrown in /app/index.php on line 85
+[Fri Mar 27 06:18:41 2026] 127.0.0.1:35206 Closing
+[Fri Mar 27 06:23:20 2026] 127.0.0.1:53538 Accepted
+[Fri Mar 27 06:23:20 2026] PHP Warning:  Undefined variable $nav_categories in /app/index.php on line 85
+[Fri Mar 27 06:23:20 2026] PHP Fatal error:  Uncaught TypeError: array_slice(): Argument #1 ($array) must be of type array, null given in /app/index.php:85
+Stack trace:
+#0 /app/index.php(85): array_slice()
+#1 {main}
+  thrown in /app/index.php on line 85
+[Fri Mar 27 06:23:20 2026] 127.0.0.1:53538 [500]: GET / - Uncaught TypeError: array_slice(): Argument #1 ($array) must be of type array, null given in /app/index.php:85
+Stack trace:
+#0 /app/index.php(85): array_slice()
+#1 {main}
+  thrown in /app/index.php on line 85
+[Fri Mar 27 06:23:20 2026] 127.0.0.1:53538 Closing
+[Fri Mar 27 06:25:01 2026] 127.0.0.1:49230 Accepted
+[Fri Mar 27 06:25:01 2026] PHP Warning:  Undefined variable $nav_categories in /app/index.php on line 85
+[Fri Mar 27 06:25:01 2026] PHP Fatal error:  Uncaught TypeError: array_slice(): Argument #1 ($array) must be of type array, null given in /app/index.php:85
+Stack trace:
+#0 /app/index.php(85): array_slice()
+#1 {main}
+  thrown in /app/index.php on line 85
+[Fri Mar 27 06:25:01 2026] 127.0.0.1:49230 [500]: GET / - Uncaught TypeError: array_slice(): Argument #1 ($array) must be of type array, null given in /app/index.php:85
+Stack trace:
+#0 /app/index.php(85): array_slice()
+#1 {main}
+  thrown in /app/index.php on line 85
+[Fri Mar 27 06:25:01 2026] 127.0.0.1:49230 Closing
+[Fri Mar 27 06:26:42 2026] 127.0.0.1:48072 Accepted
+[Fri Mar 27 06:26:42 2026] PHP Warning:  Undefined variable $nav_categories in /app/index.php on line 85
+[Fri Mar 27 06:26:42 2026] PHP Fatal error:  Uncaught TypeError: array_slice(): Argument #1 ($array) must be of type array, null given in /app/index.php:85
+Stack trace:
+#0 /app/index.php(85): array_slice()
+#1 {main}
+  thrown in /app/index.php on line 85
+[Fri Mar 27 06:26:42 2026] 127.0.0.1:48072 [500]: GET / - Uncaught TypeError: array_slice(): Argument #1 ($array) must be of type array, null given in /app/index.php:85
+Stack trace:
+#0 /app/index.php(85): array_slice()
+#1 {main}
+  thrown in /app/index.php on line 85
+[Fri Mar 27 06:26:42 2026] 127.0.0.1:48072 Closing
+[Fri Mar 27 06:29:15 2026] 127.0.0.1:52572 Accepted
+[Fri Mar 27 06:29:15 2026] PHP Warning:  Undefined variable $nav_categories in /app/index.php on line 85
+[Fri Mar 27 06:29:15 2026] PHP Fatal error:  Uncaught TypeError: array_slice(): Argument #1 ($array) must be of type array, null given in /app/index.php:85
+Stack trace:
+#0 /app/index.php(85): array_slice()
+#1 {main}
+  thrown in /app/index.php on line 85
+[Fri Mar 27 06:29:15 2026] 127.0.0.1:52572 [500]: GET / - Uncaught TypeError: array_slice(): Argument #1 ($array) must be of type array, null given in /app/index.php:85
+Stack trace:
+#0 /app/index.php(85): array_slice()
+#1 {main}
+  thrown in /app/index.php on line 85
+[Fri Mar 27 06:29:15 2026] 127.0.0.1:52572 Closing
+[Fri Mar 27 06:32:35 2026] 127.0.0.1:57242 Accepted
+[Fri Mar 27 06:32:35 2026] PHP Warning:  Undefined variable $nav_categories in /app/index.php on line 85
+[Fri Mar 27 06:32:35 2026] PHP Fatal error:  Uncaught TypeError: array_slice(): Argument #1 ($array) must be of type array, null given in /app/index.php:85
+Stack trace:
+#0 /app/index.php(85): array_slice()
+#1 {main}
+  thrown in /app/index.php on line 85
+[Fri Mar 27 06:32:35 2026] 127.0.0.1:57242 [500]: GET /index.php - Uncaught TypeError: array_slice(): Argument #1 ($array) must be of type array, null given in /app/index.php:85
+Stack trace:
+#0 /app/index.php(85): array_slice()
+#1 {main}
+  thrown in /app/index.php on line 85
+[Fri Mar 27 06:32:35 2026] 127.0.0.1:57242 Closing

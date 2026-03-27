@@ -71,104 +71,214 @@ function getYouTubeID($url) {
 </head>
 <body class="bg-white text-slate-900 overflow-x-hidden">
 
-    <!-- Premium Navigation -->
-    <nav class="border-b border-slate-100 py-6 sticky top-0 bg-white/80 backdrop-blur-md z-50">
-        <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
-            <div class="flex items-center space-x-8">
-                <a href="index" class="text-3xl font-black tracking-tighter text-slate-900 uppercase">YourStoryline</a>
-                <div class="hidden md:flex space-x-6 text-sm font-bold uppercase tracking-widest text-slate-400">
-                    <a href="index" class="hover:text-blue-600 transition text-blue-600">All Stories</a>
-                    <?php foreach ($nav_categories as $nav_cat): ?>
+    <!-- News Style Navigation -->
+    <nav class="border-b border-slate-200 py-4 sticky top-0 bg-white z-50 shadow-sm">
+        <div class="max-w-[1400px] mx-auto px-4 md:px-8 flex justify-between items-center">
+            <div class="flex items-center space-x-10">
+                <a href="index" class="flex items-center space-x-2">
+                    <span class="text-2xl font-[900] tracking-tighter text-slate-900">STORYLINE</span>
+                    <span class="text-2xl font-[900] tracking-tighter text-blue-600">NEWS</span>
+                </a>
+                <div class="hidden lg:flex items-center space-x-6 text-[13px] font-black uppercase tracking-tight text-slate-700">
+                    <a href="index" class="hover:text-blue-600 transition">Latest</a>
+                    <?php
+                    $nav_limit = array_slice($nav_categories, 0, 8);
+                    foreach ($nav_limit as $nav_cat): ?>
                         <a href="index?category=<?php echo urlencode($nav_cat['slug']); ?>" class="hover:text-blue-600 transition"><?php echo htmlspecialchars($nav_cat['name']); ?></a>
                     <?php endforeach; ?>
                 </div>
             </div>
-            <div class="flex items-center space-x-4">
-                <a href="admin/login" class="text-sm font-bold text-slate-900 border-2 border-slate-900 px-6 py-2 rounded-full hover:bg-slate-900 hover:text-white transition uppercase">Admin</a>
+            <div class="flex items-center space-x-8">
+                <div class="hidden md:flex items-center space-x-2 group cursor-pointer">
+                    <div class="w-2 h-2 rounded-full bg-red-600 group-hover:animate-pulse"></div>
+                    <span class="text-[13px] font-black uppercase tracking-tight text-slate-900">Watch</span>
+                </div>
+                <button id="menu-toggle" class="flex flex-col space-y-1.5 focus:outline-none group">
+                    <div class="w-6 h-0.5 bg-slate-900 transition-all group-hover:w-8"></div>
+                    <div class="w-8 h-0.5 bg-slate-900"></div>
+                    <div class="w-6 h-0.5 bg-slate-900 ml-auto transition-all group-hover:w-8"></div>
+                </button>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-6 py-12">
+    <!-- Mega Menu (JS Powered) -->
+    <div id="mega-menu" class="fixed inset-0 z-40 hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="toggleMenu()"></div>
+        <div class="absolute top-[73px] left-0 w-full bg-white border-b border-slate-200 shadow-2xl animate-fadeIn origin-top">
+            <div class="max-w-[1400px] mx-auto p-12">
+                <div class="flex justify-between items-start mb-10">
+                    <h2 class="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Browse All Taxonomies</h2>
+                    <button onclick="toggleMenu()" class="text-slate-400 hover:text-slate-900 transition font-bold uppercase text-[10px] tracking-widest flex items-center">Close <span class="ml-2 text-lg">×</span></button>
+                </div>
+                <div id="category-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
+                    <!-- Categories will be injected here -->
+                    <div class="animate-pulse space-y-4">
+                        <div class="aspect-square bg-slate-100 rounded-2xl"></div>
+                        <div class="h-4 bg-slate-100 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let menuOpen = false;
+        const megaMenu = document.getElementById('mega-menu');
+        const categoryGrid = document.getElementById('category-grid');
+
+        async function fetchCategories() {
+            try {
+                const response = await fetch('api/categories');
+                const categories = await response.json();
+
+                categoryGrid.innerHTML = categories.map(cat => `
+                    <a href="index?category=${cat.slug}" class="group space-y-4 block">
+                        <div class="aspect-square rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 relative shadow-sm transition-all duration-500 group-hover:shadow-blue-500/20 group-hover:-translate-y-1">
+                            ${cat.image ?
+                                `<img src="uploads/${cat.image}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">` :
+                                `<div class="w-full h-full flex items-center justify-center text-slate-300 font-black text-2xl group-hover:bg-blue-50 transition duration-500">#</div>`
+                            }
+                            <div class="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/10 transition duration-500"></div>
+                        </div>
+                        <span class="block text-sm font-black text-slate-900 uppercase tracking-tight group-hover:text-blue-600 transition">${cat.name}</span>
+                    </a>
+                `).join('');
+            } catch (error) {
+                categoryGrid.innerHTML = '<p class="text-rose-500 font-bold">Failed to load categories.</p>';
+            }
+        }
+
+        function toggleMenu() {
+            menuOpen = !menuOpen;
+            if (menuOpen) {
+                megaMenu.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                if (categoryGrid.children.length <= 1) fetchCategories();
+            } else {
+                megaMenu.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+
+        document.getElementById('menu-toggle').addEventListener('click', toggleMenu);
+    </script>
+
+    <main class="max-w-[1400px] mx-auto px-4 md:px-8 py-10">
 
         <?php if ($hero): ?>
-        <!-- Categories Carousel/Grid -->
-        <?php if (!empty($nav_categories)): ?>
-        <section class="mb-20 animate-fadeIn">
-            <h3 class="text-sm font-black uppercase tracking-[0.3em] text-slate-400 mb-8 text-center">Explore by Category</h3>
-            <div class="flex flex-wrap justify-center gap-8">
-                <?php foreach ($nav_categories as $cat): ?>
-                    <a href="index?category=<?php echo urlencode($cat['slug']); ?>" class="group relative w-44 h-44 rounded-[2.5rem] overflow-hidden shadow-xl hover:shadow-blue-500/20 transition duration-500 hover:-translate-y-2">
-                        <?php if (!empty($cat['image'])): ?>
-                            <img src="uploads/<?php echo htmlspecialchars($cat['image']); ?>" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
-                        <?php else: ?>
-                            <div class="w-full h-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-blue-50 transition duration-500 font-black text-4xl">#</div>
-                        <?php endif; ?>
-                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-80 group-hover:opacity-100 transition duration-500 flex items-end p-6">
-                            <span class="text-white font-black text-lg tracking-tight"><?php echo htmlspecialchars($cat['name']); ?></span>
-                        </div>
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-16">
+            <!-- Hero Left Content -->
+            <div class="lg:col-span-4 space-y-6">
+                <h1 class="text-3xl md:text-4xl font-black leading-tight text-slate-900 hover:text-blue-600 transition cursor-pointer">
+                    <a href="story?title=<?php echo urlencode($hero['seo_title']); ?>"><?php echo htmlspecialchars($hero['title']); ?></a>
+                </h1>
+                <p class="text-[17px] text-slate-600 leading-relaxed">
+                    <?php echo htmlspecialchars(substr(strip_tags($hero['content']), 0, 250)) . '...'; ?>
+                </p>
+                <div class="pt-6 border-t border-slate-100">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <span class="text-[10px] font-black uppercase text-slate-400">From the</span>
+                        <span class="text-[10px] font-black uppercase text-blue-600 tracking-widest"><?php echo htmlspecialchars($hero['category_name'] ?? 'General'); ?> Desk</span>
+                    </div>
+                    <a href="story?title=<?php echo urlencode($hero['seo_title']); ?>" class="text-lg font-black text-slate-900 hover:text-blue-600 transition">
+                        Read more about this story
                     </a>
-                <?php endforeach; ?>
+                </div>
+            </div>
+
+            <!-- Hero Center Image -->
+            <div class="lg:col-span-5 relative group overflow-hidden">
+                <a href="story?title=<?php echo urlencode($hero['seo_title']); ?>">
+                <?php if ($hero['featured_image']): ?>
+                    <img src="uploads/<?php echo htmlspecialchars($hero['featured_image']); ?>" class="w-full h-full min-h-[400px] object-cover transition duration-700 group-hover:opacity-95">
+                <?php elseif ($hero['youtube_url'] && ($vid = getYouTubeID($hero['youtube_url']))): ?>
+                    <iframe class="w-full h-full min-h-[400px]" src="https://www.youtube.com/embed/<?php echo $vid; ?>" frameborder="0" allowfullscreen></iframe>
+                <?php else: ?>
+                    <div class="w-full h-full min-h-[400px] bg-slate-100 flex items-center justify-center text-slate-300">No Media</div>
+                <?php endif; ?>
+                </a>
+            </div>
+
+            <!-- Hero Right Sidebar (Latest) -->
+            <div class="lg:col-span-3 border-l border-slate-100 pl-10 hidden lg:block">
+                <div class="space-y-10">
+                    <?php
+                    $sidebar_posts = array_slice($posts, 0, 4);
+                    // Remove sidebar posts from main posts loop
+                    $posts = array_slice($posts, 4);
+                    foreach($sidebar_posts as $sp): ?>
+                    <div class="relative pl-6 border-b border-dashed border-slate-200 pb-8 last:border-0">
+                        <div class="absolute left-0 top-1.5 w-2 h-2 rounded-full bg-blue-600"></div>
+                        <span class="text-[11px] font-black text-slate-400 uppercase tracking-tighter mb-2 block">
+                            <?php
+                                $time_ago = floor((time() - strtotime($sp['created_at'])) / 3600);
+                                echo $time_ago > 0 ? $time_ago . "h ago" : "Just now";
+                            ?>
+                        </span>
+                        <h4 class="text-[16px] font-black leading-snug text-slate-900 hover:text-blue-600 transition">
+                            <a href="story?title=<?php echo urlencode($sp['seo_title']); ?>"><?php echo htmlspecialchars($sp['title']); ?></a>
+                        </h4>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </section>
+
+        <!-- Promotion Banner -->
+        <?php
+        // Take another post for the promotion slot if available
+        $promo = array_shift($posts);
+        if ($promo):
+        ?>
+        <section class="bg-slate-50 p-1 rounded-sm mb-16 flex flex-col md:flex-row items-stretch border-y border-slate-100">
+            <div class="flex-grow p-8 md:p-12 space-y-4">
+                <span class="inline-block bg-black text-white px-2 py-0.5 text-[10px] font-black uppercase tracking-widest">Promotion</span>
+                <h3 class="text-2xl md:text-3xl font-black text-slate-900 leading-tight">
+                    <a href="story?title=<?php echo urlencode($promo['seo_title']); ?>" class="hover:text-blue-600 transition">
+                        <?php echo htmlspecialchars($promo['title']); ?>
+                    </a>
+                </h3>
+                <p class="text-slate-500 font-bold text-[11px] uppercase tracking-widest">
+                    Powered by Storyline News
+                </p>
+            </div>
+            <div class="w-full md:w-[350px] relative overflow-hidden">
+                <?php if ($promo['featured_image']): ?>
+                    <img src="uploads/<?php echo htmlspecialchars($promo['featured_image']); ?>" class="w-full h-full object-cover">
+                <?php else: ?>
+                    <div class="w-full h-full bg-slate-200"></div>
+                <?php endif; ?>
+                <div class="absolute inset-0 bg-blue-600/10 flex items-center justify-center">
+                    <div class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full border border-white/30 flex items-center justify-center text-white text-xl">🎙️</div>
+                </div>
             </div>
         </section>
         <?php endif; ?>
 
-        <!-- Hero Section -->
-        <section class="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20 items-center">
-            <div class="lg:col-span-7 relative group overflow-hidden rounded-3xl">
-                <?php if ($hero['featured_image']): ?>
-                    <img src="uploads/<?php echo htmlspecialchars($hero['featured_image']); ?>" class="w-full aspect-[16/10] object-cover group-hover:scale-105 transition duration-700">
-                <?php elseif ($hero['youtube_url'] && ($vid = getYouTubeID($hero['youtube_url']))): ?>
-                    <iframe class="w-full aspect-video rounded-3xl" src="https://www.youtube.com/embed/<?php echo $vid; ?>" frameborder="0" allowfullscreen></iframe>
-                <?php else: ?>
-                    <div class="w-full aspect-[16/10] bg-slate-100 flex items-center justify-center text-slate-300 rounded-3xl">No Media</div>
-                <?php endif; ?>
-                <a href="index?category=<?php echo urlencode($hero['category_slug'] ?? ''); ?>" class="absolute top-6 left-6 bg-blue-600 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition">
-                    <?php echo htmlspecialchars($hero['category_name'] ?? 'Featured'); ?>
-                </a>
-            </div>
-            <div class="lg:col-span-5 space-y-6">
-                <span class="text-sm font-bold text-blue-600 uppercase tracking-[0.2em]"><?php echo date('M d, Y', strtotime($hero['created_at'])); ?></span>
-                <h1 class="text-5xl md:text-6xl font-black leading-[1.1] tracking-tight hover:text-blue-600 transition cursor-pointer">
-                    <a href="story?title=<?php echo urlencode($hero['seo_title']); ?>"><?php echo htmlspecialchars($hero['title']); ?></a>
-                </h1>
-                <p class="text-xl text-slate-500 leading-relaxed font-medium line-clamp-3">
-                    <?php echo htmlspecialchars(substr(strip_tags($hero['content']), 0, 200)) . '...'; ?>
-                </p>
-                <div class="pt-4">
-                    <a href="story?title=<?php echo urlencode($hero['seo_title']); ?>" class="inline-flex items-center text-lg font-black group">
-                        Read Full Story
-                        <span class="ml-3 w-10 h-10 bg-slate-900 text-white rounded-full flex items-center justify-center group-hover:bg-blue-600 transition duration-300">→</span>
-                    </a>
-                </div>
-            </div>
-        </section>
-
         <!-- Secondary Grid -->
-        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 border-t border-slate-100 pt-16">
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pt-10">
             <?php foreach ($posts as $post): ?>
-            <article class="group">
-                <div class="relative overflow-hidden rounded-2xl mb-6">
+            <article class="group flex flex-col space-y-5 border-b border-slate-50 pb-10 mb-10 last:border-0 last:mb-0 last:pb-0">
+                <div class="relative overflow-hidden aspect-[16/10]">
+                    <a href="story?title=<?php echo urlencode($post['seo_title']); ?>">
                     <?php if ($post['featured_image']): ?>
-                        <img src="uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full aspect-square object-cover group-hover:scale-105 transition duration-500">
+                        <img src="uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full h-full object-cover transition duration-500 group-hover:opacity-90">
                     <?php elseif ($post['youtube_url'] && ($vid = getYouTubeID($post['youtube_url']))): ?>
-                         <div class="aspect-square bg-slate-900 flex items-center justify-center rounded-2xl">
-                             <img src="https://img.youtube.com/vi/<?php echo $vid; ?>/maxresdefault.jpg" class="w-full h-full object-cover opacity-60 group-hover:scale-105 transition duration-500">
-                             <div class="absolute inset-0 flex items-center justify-center"><div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-white/30 group-hover:bg-blue-600 transition">▶</div></div>
+                         <div class="w-full h-full bg-slate-900 flex items-center justify-center">
+                             <img src="https://img.youtube.com/vi/<?php echo $vid; ?>/maxresdefault.jpg" class="w-full h-full object-cover opacity-60">
                          </div>
                     <?php else: ?>
-                        <div class="w-full aspect-square bg-slate-50 flex items-center justify-center text-slate-200">No Image</div>
+                        <div class="w-full h-full bg-slate-100 flex items-center justify-center text-slate-200">No Image</div>
                     <?php endif; ?>
-                    <a href="index?category=<?php echo urlencode($post['category_slug'] ?? ''); ?>" class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-blue-600 hover:bg-white transition">
-                        <?php echo htmlspecialchars($post['category_name'] ?? 'General'); ?>
                     </a>
                 </div>
-                <div class="space-y-4">
-                    <span class="text-xs font-black text-slate-400 uppercase tracking-widest block"><?php echo date('M d, Y', strtotime($post['created_at'])); ?></span>
-                    <h2 class="text-2xl font-bold leading-tight group-hover:text-blue-600 transition">
+                <div class="space-y-3">
+                    <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest"><?php echo htmlspecialchars($post['category_name'] ?? 'General'); ?></span>
+                    <h2 class="text-xl font-black leading-tight text-slate-900 hover:text-blue-600 transition">
                         <a href="story?title=<?php echo urlencode($post['seo_title']); ?>"><?php echo htmlspecialchars($post['title']); ?></a>
                     </h2>
-                    <p class="text-slate-500 line-clamp-2 leading-relaxed"><?php echo htmlspecialchars(substr(strip_tags($post['content']), 0, 100)) . '...'; ?></p>
+                    <p class="text-slate-500 text-sm line-clamp-2 leading-relaxed"><?php echo htmlspecialchars(substr(strip_tags($post['content']), 0, 120)) . '...'; ?></p>
                 </div>
             </article>
             <?php endforeach; ?>
@@ -185,9 +295,9 @@ function getYouTubeID($url) {
 
     <!-- Footer -->
     <footer class="bg-slate-900 text-white py-20 mt-32">
-        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-4 gap-16">
+        <div class="max-w-[1400px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-4 gap-16">
             <div class="lg:col-span-2 space-y-8">
-                <h3 class="text-4xl font-black tracking-tighter">YourStoryline</h3>
+                <h3 class="text-4xl font-[900] tracking-tighter">STORYLINE NEWS</h3>
                 <p class="text-slate-400 max-w-sm text-lg leading-relaxed"><?php echo htmlspecialchars($settings['meta_description'] ?? 'Curating the world\'s most compelling stories in a clean, modern aesthetic.'); ?></p>
                 <div class="flex space-x-6">
                     <a href="#" class="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center hover:bg-blue-600 transition">T</a>
@@ -211,8 +321,8 @@ function getYouTubeID($url) {
                 </form>
             </div>
         </div>
-        <div class="max-w-7xl mx-auto px-6 mt-20 pt-8 border-t border-white/5 text-center text-slate-500 text-sm font-bold">
-            © <?php echo date('Y'); ?> YourStoryline. Crafting narratives with precision.
+        <div class="max-w-[1400px] mx-auto px-6 mt-20 pt-8 border-t border-white/5 text-center text-slate-500 text-sm font-bold">
+            © <?php echo date('Y'); ?> STORYLINE NEWS. All rights reserved.
         </div>
     </footer>
 

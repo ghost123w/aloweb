@@ -11,6 +11,11 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 
 require_once '../includes/config.php';
 $migration_needed = false;
+$total_posts = 0;
+$total_categories = 0;
+$total_subscribers = 0;
+$cat_stats = [];
+
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -26,19 +31,22 @@ try {
         }
     }
 
-    // Stats for Dashboard
-    $total_posts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
-    $total_categories = $pdo->query("SELECT COUNT(*) FROM categories")->fetchColumn();
-    $total_subscribers = 0;
+    // Only run full stats if tables exist
+    if ($pdo->query("SHOW TABLES LIKE 'posts'")->rowCount() > 0) {
+        $total_posts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
+    }
+
+    if (!$migration_needed) {
+        $total_categories = $pdo->query("SELECT COUNT(*) FROM categories")->fetchColumn();
+        $cat_stats = $pdo->query("SELECT c.name, COUNT(p.id) as count FROM categories c LEFT JOIN posts p ON c.id = p.category_id GROUP BY c.id")->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     if ($pdo->query("SHOW TABLES LIKE 'subscribers'")->rowCount() > 0) {
         $total_subscribers = $pdo->query("SELECT COUNT(*) FROM subscribers")->fetchColumn();
     }
 
-    // Category distribution for Chart
-    $cat_stats = $pdo->query("SELECT c.name, COUNT(p.id) as count FROM categories c LEFT JOIN posts p ON c.id = p.category_id GROUP BY c.id")->fetchAll(PDO::FETCH_ASSOC);
-
 } catch (PDOException $e) {
-    // Connection error handled elsewhere or ignore for now
+    // Connection error handled gracefully by initialized defaults
 }
 ?>
 <!DOCTYPE html>

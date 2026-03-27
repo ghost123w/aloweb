@@ -47,7 +47,7 @@ try {
                     $allowed_mime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
                     if (in_array($mime_type, $allowed_mime)) {
-                        $new_file_name = time() . '_' . bin2hex(random_bytes(8)) . '.' . $file_ext;
+                        $new_file_name = 'profile_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $file_ext;
                         $target_file = $upload_dir . $new_file_name;
 
                         if (move_uploaded_file($_FILES['profile_pic']['tmp_name'], $target_file)) {
@@ -116,73 +116,107 @@ try {
     <title>Profile - YourStoryline Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0c0e14; color: #ffffff; }
+        .glass-card {
+            background: rgba(23, 25, 35, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sidebar-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #94a3b8;
+        }
+        .sidebar-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        .sidebar-item.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+        }
+        input, select, textarea {
+            background: rgba(255, 255, 255, 0.02) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+        }
+        input:focus, textarea:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+        }
     </style>
 </head>
-<body class="bg-[#F8FAFC] flex min-h-screen font-sans">
+<body class="flex min-h-screen relative overflow-x-hidden">
+    <!-- Background Accents -->
+    <div class="fixed top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] -z-10 -mr-64 -mt-64"></div>
+    <div class="fixed bottom-0 left-0 w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px] -z-10 -ml-32 -mb-32"></div>
 
-    <!-- Sidebar -->
-    <aside class="w-72 bg-[#0F172A] text-white flex flex-col p-8 space-y-10 fixed h-full shadow-2xl">
-        <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black text-xl">S</div>
-            <h2 class="text-2xl font-black tracking-tight">Storyline</h2>
+    <aside class="w-72 bg-[#11131a] text-slate-400 flex flex-col p-8 space-y-10 shadow-2xl fixed h-full z-50 border-r border-white/5">
+        <div class="flex items-center space-x-4">
+            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-lg shadow-blue-500/20">S</div>
+            <h2 class="text-2xl font-black tracking-tighter text-white">Storyline</h2>
         </div>
         <nav class="flex-grow space-y-2">
-            <a href="index" class="flex items-center space-x-4 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition font-semibold">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+            <a href="index" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v-2a2 2 0 01-2-2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v-2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                 <span>Dashboard</span>
             </a>
-            <a href="posts" class="flex items-center space-x-4 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition font-semibold">
+            <a href="posts" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 4v4h4"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 16h6"></path></svg>
                 <span>Post Manager</span>
             </a>
-            <a href="categories" class="flex items-center space-x-4 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition font-semibold">
+            <a href="categories" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 11h.01M7 15h.01M13 7h.01M13 11h.01M13 15h.01M17 7h.01M17 11h.01M17 15h.01"></path></svg>
                 <span>Categories</span>
             </a>
-            <a href="settings" class="flex items-center space-x-4 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition font-semibold">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <a href="settings" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                 <span>Settings</span>
             </a>
-            <a href="profile" class="flex items-center space-x-4 px-4 py-3 rounded-xl bg-blue-600 text-white transition font-bold shadow-lg shadow-blue-500/20">
+            <a href="profile" class="sidebar-item active flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                 <span>Profile</span>
             </a>
         </nav>
-        <div class="border-t border-slate-800 pt-6">
-            <a href="logout" class="flex items-center space-x-4 px-4 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-400/5 transition font-semibold">
+        <div class="border-t border-white/5 pt-6">
+            <a href="logout" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold text-rose-500/80">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                 <span>Logout</span>
             </a>
         </div>
     </aside>
 
-    <!-- Main Content -->
     <main class="flex-grow ml-72 p-12 overflow-auto">
         <div class="max-w-5xl mx-auto">
             <header class="mb-12 flex justify-between items-end">
                 <div>
-                    <h1 class="text-4xl font-black text-slate-900 tracking-tight mb-2">Account Settings</h1>
-                    <p class="text-slate-500 font-medium">Update your professional profile and security details.</p>
+                    <h1 class="text-4xl font-black text-white tracking-tighter mb-2">Architect Profile</h1>
+                    <p class="text-slate-500 font-medium">Managing the identity behind the narrative.</p>
                 </div>
                 <div class="hidden md:block">
-                    <a href="../index" class="text-sm font-bold text-slate-400 hover:text-blue-600 transition flex items-center space-x-2">
-                        <span>View public site</span>
+                    <a href="../index" class="text-xs font-bold text-slate-400 hover:text-blue-600 transition flex items-center space-x-2 tracking-widest uppercase">
+                        <span>Platform View</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                     </a>
                 </div>
             </header>
 
             <?php if (isset($message)): ?>
-                <div class="bg-emerald-50 text-emerald-600 p-5 rounded-2xl mb-10 border border-emerald-100 flex items-center space-x-3 font-bold shadow-sm">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <div class="bg-blue-600/10 text-blue-400 p-6 rounded-[2rem] mb-10 border border-blue-500/20 flex items-center space-x-4 font-bold shadow-lg shadow-blue-500/5">
+                    <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
                     <span><?php echo $message; ?></span>
                 </div>
             <?php endif; ?>
             <?php if (isset($error)): ?>
-                <div class="bg-rose-50 text-rose-600 p-5 rounded-2xl mb-10 border border-rose-100 flex items-center space-x-3 font-bold shadow-sm">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <div class="bg-rose-500/10 text-rose-400 p-6 rounded-[2rem] mb-10 border border-rose-500/20 flex items-center space-x-4 font-bold shadow-lg shadow-rose-500/5">
+                    <div class="w-10 h-10 bg-rose-600 rounded-xl flex items-center justify-center text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
                     <span><?php echo $error; ?></span>
                 </div>
             <?php endif; ?>
@@ -190,100 +224,102 @@ try {
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
 
                 <!-- Profile Section -->
-                <section class="lg:col-span-2 bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-100">
-                    <div class="flex items-center space-x-4 mb-10">
-                        <div class="w-1.5 h-8 bg-blue-600 rounded-full"></div>
-                        <h2 class="text-2xl font-black text-slate-900">Personal Information</h2>
-                    </div>
-
-                    <form method="post" enctype="multipart/form-data" class="space-y-10">
+                <section class="lg:col-span-2 space-y-8">
+                    <form method="post" enctype="multipart/form-data" class="space-y-8">
                         <input type="hidden" name="update_profile" value="1">
                         <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
 
-                        <div class="flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-10 p-8 bg-slate-50 rounded-3xl border border-slate-100">
-                            <div class="relative group">
-                                <div class="w-32 h-32 rounded-3xl overflow-hidden shadow-2xl border-4 border-white ring-1 ring-slate-200">
-                                    <?php if (!empty($user['profile_picture']) && file_exists('../uploads/' . $user['profile_picture'])): ?>
-                                        <img id="profile-preview" src="../uploads/<?php echo htmlspecialchars($user['profile_picture']); ?>" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
-                                        <div id="profile-placeholder" class="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white hidden items-center justify-center text-4xl font-black transition duration-500 group-hover:scale-110">
-                                            <?php echo strtoupper(substr($user['email'], 0, 1)); ?>
-                                        </div>
-                                    <?php else: ?>
-                                        <div id="profile-placeholder" class="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-4xl font-black transition duration-500 group-hover:scale-110">
-                                            <?php echo strtoupper(substr($user['email'], 0, 1)); ?>
-                                        </div>
-                                        <img id="profile-preview" class="w-full h-full object-cover hidden">
-                                    <?php endif; ?>
+                        <div class="glass-card p-10 rounded-[3rem] space-y-10">
+                            <div class="flex flex-col md:flex-row items-center space-y-8 md:space-y-0 md:space-x-12">
+                                <div class="relative group">
+                                    <div class="w-40 h-40 rounded-[2.5rem] overflow-hidden shadow-2xl bg-black/40 border-4 border-white/5 ring-4 ring-blue-600/10 group-hover:ring-blue-600/30 transition-all duration-500">
+                                        <?php if (!empty($user['profile_picture']) && file_exists('../uploads/' . $user['profile_picture'])): ?>
+                                            <img id="profile-preview" src="../uploads/<?php echo htmlspecialchars($user['profile_picture']); ?>" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                                        <?php else: ?>
+                                            <div id="profile-placeholder" class="w-full h-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center text-5xl font-black transition duration-700 group-hover:scale-110">
+                                                <?php echo strtoupper(substr($user['email'], 0, 1)); ?>
+                                            </div>
+                                            <img id="profile-preview" class="w-full h-full object-cover hidden">
+                                        <?php endif; ?>
+                                    </div>
+                                    <label class="absolute -bottom-4 -right-4 bg-blue-600 p-4 rounded-2xl text-white cursor-pointer hover:bg-blue-700 transition-all duration-300 shadow-2xl shadow-blue-500/40 border border-white/10 group-hover:scale-110 active:scale-95">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                        <input type="file" name="profile_pic" id="profile-input" class="hidden" onchange="previewImage(this)">
+                                    </label>
                                 </div>
-                                <label class="absolute -bottom-3 -right-3 bg-white p-3 rounded-2xl text-blue-600 cursor-pointer hover:bg-blue-600 hover:text-white transition-all duration-300 shadow-xl border border-slate-100 group-hover:scale-110">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                    <input type="file" name="profile_pic" id="profile-input" class="hidden" onchange="previewImage(this)">
-                                </label>
+                                <div class="flex-grow text-center md:text-left space-y-4">
+                                    <div>
+                                        <h3 class="text-3xl font-black text-white tracking-tight mb-1"><?php echo htmlspecialchars($user['email'] ?? ''); ?></h3>
+                                        <p class="text-blue-500 font-black text-[10px] uppercase tracking-[0.3em]">Lead Architect & Administrator</p>
+                                    </div>
+                                    <div class="flex flex-wrap justify-center md:justify-start gap-3 pt-2">
+                                        <button type="button" onclick="document.getElementById('profile-input').click()" class="text-[10px] font-black uppercase tracking-widest bg-white/5 hover:bg-white/10 text-white px-5 py-2.5 rounded-xl border border-white/5 transition-all">Change Visual</button>
+                                        <button type="button" onclick="removeImage()" class="text-[10px] font-black uppercase tracking-widest bg-rose-600/10 hover:bg-rose-600 text-rose-500 hover:text-white px-5 py-2.5 rounded-xl border border-rose-500/10 transition-all">Purge Asset</button>
+                                        <input type="hidden" name="remove_pic" id="remove-pic-input" value="0">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mt-4 flex space-x-2">
-                                <button type="button" onclick="document.getElementById('profile-input').click()" class="text-xs font-bold bg-white text-slate-600 px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-50">Change</button>
-                                <button type="button" onclick="removeImage()" class="text-xs font-bold bg-white text-rose-600 px-3 py-1 rounded-lg border border-slate-200 hover:bg-rose-50">Remove</button>
-                                <input type="hidden" name="remove_pic" id="remove-pic-input" value="0">
-                            </div>
-                            <div class="flex-grow text-center md:text-left">
-                                <h3 class="text-xl font-bold text-slate-900 mb-1"><?php echo htmlspecialchars($user['email'] ?? ''); ?></h3>
-                                <p class="text-slate-400 font-semibold text-sm uppercase tracking-widest">Platform Administrator</p>
-                                <p class="mt-4 text-xs text-slate-400 max-w-xs leading-relaxed italic">Allowed: JPG, PNG, GIF. Max size 2MB recommended.</p>
-                            </div>
-                        </div>
 
-                        <div class="space-y-4">
-                            <label class="block text-sm font-bold text-slate-700 ml-1 uppercase tracking-wider">Professional Bio</label>
-                            <textarea name="bio" rows="6" class="w-full px-6 py-5 bg-slate-50 border-2 border-transparent rounded-3xl focus:border-blue-500 focus:bg-white transition-all duration-300 outline-none font-medium text-slate-700 shadow-inner" placeholder="Tell the audience about your role..."><?php echo htmlspecialchars($user['bio'] ?? ''); ?></textarea>
-                        </div>
+                            <div class="space-y-6 pt-4">
+                                <label class="block text-[10px] font-black text-slate-500 ml-1 uppercase tracking-[0.2em]">Biographical Narrative</label>
+                                <textarea name="bio" rows="6" class="w-full px-8 py-6 rounded-[2rem] outline-none text-lg leading-relaxed placeholder:text-slate-800" placeholder="Define your role within the system..."><?php echo htmlspecialchars($user['bio'] ?? ''); ?></textarea>
+                            </div>
 
-                        <button type="submit" class="w-full bg-blue-600 text-white py-5 rounded-[2rem] font-black text-lg hover:bg-blue-700 transition-all duration-300 shadow-2xl shadow-blue-500/20 active:scale-[0.98]">
-                            Save Profile Changes
-                        </button>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-6 rounded-[2rem] font-black text-xl hover:bg-blue-700 transition-all duration-300 shadow-2xl shadow-blue-500/30 active:scale-[0.98]">
+                                Commit Identity Changes
+                            </button>
+                        </div>
                     </form>
                 </section>
 
                 <!-- Security Section -->
-                <section class="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-100">
-                    <div class="flex items-center space-x-4 mb-10">
-                        <div class="w-1.5 h-8 bg-slate-900 rounded-full"></div>
-                        <h2 class="text-2xl font-black text-slate-900">Security</h2>
-                    </div>
-
-                    <form method="post" class="space-y-8">
-                        <input type="hidden" name="change_password" value="1">
-                        <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
-                        <div class="space-y-6">
-                            <div class="space-y-3">
-                                <label class="block text-sm font-bold text-slate-700 ml-1 uppercase tracking-wider">Current Password</label>
-                                <div class="relative">
-                                    <input type="password" name="current_password" required class="w-full px-6 py-5 bg-slate-50 border-2 border-transparent rounded-3xl focus:border-blue-500 focus:bg-white transition-all duration-300 outline-none font-medium text-slate-700 shadow-inner pl-14" placeholder="••••••••">
-                                    <div class="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div>
-                                </div>
-                            </div>
-                            <div class="space-y-3">
-                                <label class="block text-sm font-bold text-slate-700 ml-1 uppercase tracking-wider">New Password</label>
-                                <div class="relative">
-                                    <input type="password" name="new_password" required class="w-full px-6 py-5 bg-slate-50 border-2 border-transparent rounded-3xl focus:border-blue-500 focus:bg-white transition-all duration-300 outline-none font-medium text-slate-700 shadow-inner pl-14" placeholder="••••••••">
-                                    <div class="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div>
-                                </div>
-                            </div>
-                            <div class="space-y-3">
-                                <label class="block text-sm font-bold text-slate-700 ml-1 uppercase tracking-wider">Confirm New Password</label>
-                                <div class="relative">
-                                    <input type="password" name="confirm_password" required class="w-full px-6 py-5 bg-slate-50 border-2 border-transparent rounded-3xl focus:border-blue-500 focus:bg-white transition-all duration-300 outline-none font-medium text-slate-700 shadow-inner pl-14" placeholder="••••••••">
-                                    <div class="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg></div>
-                                </div>
-                            </div>
+                <section class="space-y-8">
+                    <div class="glass-card p-10 rounded-[3rem] space-y-10">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-1.5 h-8 bg-blue-600 rounded-full"></div>
+                            <h2 class="text-2xl font-black text-white tracking-tight">Access Control</h2>
                         </div>
-                        <button type="submit" class="w-full bg-slate-900 text-white py-5 rounded-[2rem] font-black text-lg hover:bg-slate-800 transition-all duration-300 shadow-2xl shadow-black/10 active:scale-[0.98]">
-                            Update Credentials
-                        </button>
-                    </form>
-                    <div class="mt-8 p-6 bg-amber-50 rounded-3xl border border-amber-100">
-                        <p class="text-xs text-amber-700 font-medium leading-relaxed">
-                            <strong>Note:</strong> You will receive an email notification upon a successful password change for security auditing.
-                        </p>
+
+                        <form method="post" class="space-y-8">
+                            <input type="hidden" name="change_password" value="1">
+                            <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
+
+                            <div class="space-y-6">
+                                <div class="space-y-4">
+                                    <label class="block text-[10px] font-black text-slate-500 ml-1 uppercase tracking-[0.2em]">Current Key</label>
+                                    <div class="relative">
+                                        <input type="password" name="current_password" required class="w-full px-6 py-4 rounded-2xl outline-none text-sm font-bold pl-12" placeholder="••••••••">
+                                        <div class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div>
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <label class="block text-[10px] font-black text-slate-500 ml-1 uppercase tracking-[0.2em]">New Security Key</label>
+                                    <div class="relative">
+                                        <input type="password" name="new_password" required class="w-full px-6 py-4 rounded-2xl outline-none text-sm font-bold pl-12" placeholder="••••••••">
+                                        <div class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div>
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <label class="block text-[10px] font-black text-slate-500 ml-1 uppercase tracking-[0.2em]">Verify New Key</label>
+                                    <div class="relative">
+                                        <input type="password" name="confirm_password" required class="w-full px-6 py-4 rounded-2xl outline-none text-sm font-bold pl-12" placeholder="••••••••">
+                                        <div class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg hover:bg-blue-700 transition-all duration-300 shadow-2xl shadow-blue-500/20 active:scale-[0.98]">
+                                Update Credentials
+                            </button>
+                        </form>
+
+                        <div class="p-6 rounded-2xl bg-blue-600/5 border border-blue-500/10">
+                            <h4 class="text-blue-400 font-black text-[10px] uppercase tracking-widest mb-2 flex items-center">
+                                <span class="mr-2">🛡️</span> Security Protocol
+                            </h4>
+                            <p class="text-slate-500 text-[10px] leading-relaxed font-bold uppercase tracking-tight">
+                                Changing your access key will trigger an automated alert to your registered email for auditing.
+                            </p>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -317,8 +353,7 @@ try {
             if (placeholder) {
                 placeholder.classList.remove('hidden');
             } else {
-                // If no placeholder exists in DOM, we should show the initials or default
-                location.reload(); // Simplest way to reset to DB state if we don't want to complexify JS
+                location.reload();
                 return;
             }
             document.getElementById('remove-pic-input').value = '1';
