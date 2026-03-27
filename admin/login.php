@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!file_exists('../includes/config.php')) {
-    header("Location: ../install/index.php");
+    header("Location: ../install/index");
     exit;
 }
 require_once '../includes/config.php';
@@ -25,13 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             require_once '../includes/functions.php';
             sendNotification($user['email'], "New Login Detected", "A login occurred at " . date('Y-m-d H:i'));
 
-            header("Location: index.php");
+            header("Location: index");
             exit;
         } else {
             $error = "Invalid email or password.";
         }
     } catch (PDOException $e) {
-        $error = "Database error: " . $e->getMessage() . ". <br><a href='../install/index.php' class='underline text-red-700'>Click here to run installer</a> if the database is not configured.";
+        $error = "Database connectivity issue: " . $e->getMessage() . ". <br><a href='../install/index' class='underline text-rose-400'>Click here to run installer</a> if the database is not configured correctly.";
     }
 }
 ?>
@@ -75,9 +75,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <?php if (isset($error)): ?>
-            <div class="bg-rose-500/10 text-rose-400 p-5 rounded-2xl mb-8 border border-rose-500/20 text-xs font-bold flex items-center space-x-3">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span><?php echo $error; ?></span>
+            <div class="bg-rose-500/10 text-rose-400 p-6 rounded-2xl mb-8 border border-rose-500/20 text-xs font-bold leading-relaxed">
+                <div class="flex items-center space-x-3 mb-2">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Authentication Alert</span>
+                </div>
+                <?php echo $error; ?>
             </div>
         <?php endif; ?>
 

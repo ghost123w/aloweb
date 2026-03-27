@@ -12,6 +12,7 @@ $nav_categories = [];
 $posts = [];
 $hero = null;
 $catTableCheck = false;
+$db_error = null;
 
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
@@ -53,8 +54,7 @@ try {
     }
 
 } catch (PDOException $e) {
-    // In case of error (like 'Access denied'), variables remain at their initial empty states.
-    // The UI will show the "The press is quiet today" fallback.
+    $db_error = $e->getMessage();
 }
 
 function getYouTubeID($url) {
@@ -181,7 +181,13 @@ function getYouTubeID($url) {
 
     <main class="max-w-[1400px] mx-auto px-4 md:px-8 py-10">
 
-        <?php if ($hero): ?>
+        <?php if ($db_error): ?>
+            <div class="bg-rose-50 border-2 border-rose-100 p-10 rounded-[2rem] text-center my-20">
+                <h2 class="text-rose-600 font-black text-2xl mb-4 italic tracking-tight">Database Connectivity Issue</h2>
+                <p class="text-rose-500 font-bold mb-10 max-w-lg mx-auto"><?php echo htmlspecialchars($db_error); ?></p>
+                <a href="install/index" class="bg-rose-600 text-white px-10 py-4 rounded-2xl font-black text-lg hover:bg-rose-700 transition shadow-xl shadow-rose-500/20">Run Installer Interface</a>
+            </div>
+        <?php elseif ($hero): ?>
         <section class="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-16">
             <!-- Hero Left Content -->
             <div class="lg:col-span-4 space-y-6">
@@ -309,10 +315,10 @@ function getYouTubeID($url) {
         <?php endif; ?>
 
         <?php else: ?>
-            <div class="text-center py-32">
-                <h2 class="text-4xl font-black mb-4">The press is quiet today.</h2>
-                <p class="text-slate-400 mb-10">Waiting for the next big story to break.</p>
-                <a href="admin/posts?action=add" class="bg-blue-600 text-white px-10 py-4 rounded-full font-black hover:bg-blue-700 transition shadow-xl shadow-blue-500/20">Write First Story</a>
+            <div class="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+                <h2 class="text-4xl font-black mb-4 italic tracking-tight">The press is quiet today.</h2>
+                <p class="text-slate-400 mb-10 font-bold uppercase tracking-widest text-xs">Waiting for the next big story to break.</p>
+                <a href="admin/login" class="bg-blue-600 text-white px-10 py-4 rounded-full font-black hover:bg-blue-700 transition shadow-xl shadow-blue-500/20">Initialize First Story</a>
             </div>
         <?php endif; ?>
 

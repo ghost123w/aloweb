@@ -1,6 +1,6 @@
 <?php
 if (!file_exists(__DIR__ . '/includes/config.php')) {
-    header("Location: install/index.php");
+    header("Location: install/index");
     exit;
 }
 
