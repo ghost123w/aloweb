@@ -25,7 +25,7 @@ try {
     $post = $stmt->fetch();
 
     if (!$post) {
-        header("Location: index.php");
+        header("Location: index");
         exit;
     }
 

@@ -1,23 +1,28 @@
 <?php
 if (!file_exists(__DIR__ . '/includes/config.php')) {
-    header("Location: install/index.php");
+    header("Location: install/index");
     exit;
 }
 
 require_once 'includes/config.php';
 
+// Initialize variables to prevent "Undefined variable" warnings
+$settings = [];
+$nav_categories = [];
+$posts = [];
+$hero = null;
+$catTableCheck = false;
+
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $stmt = $pdo->query("SELECT * FROM settings LIMIT 1");
-    $settings = $stmt->fetch();
-    if (!$settings) $settings = [];
+    $stmt_settings = $pdo->query("SELECT * FROM settings LIMIT 1");
+    $settings_data = $stmt_settings->fetch();
+    if ($settings_data) $settings = $settings_data;
 
     // Check if categories table exists
     $catTableCheck = $pdo->query("SHOW TABLES LIKE 'categories'")->rowCount() > 0;
-    $nav_categories = [];
-    $posts = [];
 
     if ($catTableCheck) {
         // Fetch categories for navigation
@@ -27,24 +32,29 @@ try {
         // Category filtering
         $category_slug = $_GET['category'] ?? null;
         if ($category_slug) {
-            $stmt = $pdo->prepare("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE c.slug = ? ORDER BY p.created_at DESC LIMIT 10");
-            $stmt->execute([$category_slug]);
+            $stmt_posts = $pdo->prepare("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE c.slug = ? ORDER BY p.created_at DESC LIMIT 10");
+            $stmt_posts->execute([$category_slug]);
         } else {
-            $stmt = $pdo->query("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.created_at DESC LIMIT 10");
+            $stmt_posts = $pdo->query("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.created_at DESC LIMIT 10");
         }
+        $posts = $stmt_posts->fetchAll();
     } else {
-        // Fallback for legacy schema
-        $stmt = $pdo->query("SELECT *, NULL as category_name, NULL as category_slug FROM posts ORDER BY created_at DESC LIMIT 10");
+        // Fallback for legacy schema or unmigrated databases
+        $postsTableCheck = $pdo->query("SHOW TABLES LIKE 'posts'")->rowCount() > 0;
+        if ($postsTableCheck) {
+            $stmt_posts = $pdo->query("SELECT *, NULL as category_name, NULL as category_slug FROM posts ORDER BY created_at DESC LIMIT 10");
+            $posts = $stmt_posts->fetchAll();
+        }
     }
-    $posts = $stmt->fetchAll();
 
-    // The first post will be the hero
-    $hero = array_shift($posts);
+    // Assign hero from the top post
+    if (!empty($posts)) {
+        $hero = array_shift($posts);
+    }
 
 } catch (PDOException $e) {
-    $settings = null;
-    $posts = [];
-    $hero = null;
+    // In case of error (like 'Access denied'), variables remain at their initial empty states.
+    // The UI will show the "The press is quiet today" fallback.
 }
 
 function getYouTubeID($url) {
@@ -132,6 +142,11 @@ function getYouTubeID($url) {
                 const response = await fetch('api/categories');
                 const categories = await response.json();
 
+                if (categories.length === 0) {
+                    categoryGrid.innerHTML = '<div class="col-span-full py-12 text-center text-slate-400 font-bold uppercase tracking-widest">No categories defined.</div>';
+                    return;
+                }
+
                 categoryGrid.innerHTML = categories.map(cat => `
                     <a href="index?category=${cat.slug}" class="group space-y-4 block">
                         <div class="aspect-square rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 relative shadow-sm transition-all duration-500 group-hover:shadow-blue-500/20 group-hover:-translate-y-1">
@@ -145,7 +160,7 @@ function getYouTubeID($url) {
                     </a>
                 `).join('');
             } catch (error) {
-                categoryGrid.innerHTML = '<p class="text-rose-500 font-bold">Failed to load categories.</p>';
+                categoryGrid.innerHTML = '<div class="col-span-full py-12 text-center text-rose-500 font-bold uppercase tracking-widest">Network Error</div>';
             }
         }
 
@@ -195,7 +210,7 @@ function getYouTubeID($url) {
                 <?php elseif ($hero['youtube_url'] && ($vid = getYouTubeID($hero['youtube_url']))): ?>
                     <iframe class="w-full h-full min-h-[400px]" src="https://www.youtube.com/embed/<?php echo $vid; ?>" frameborder="0" allowfullscreen></iframe>
                 <?php else: ?>
-                    <div class="w-full h-full min-h-[400px] bg-slate-100 flex items-center justify-center text-slate-300">No Media</div>
+                    <div class="w-full h-full min-h-[400px] bg-slate-100 flex items-center justify-center text-slate-300 font-black uppercase tracking-tighter">Story Asset Unavailable</div>
                 <?php endif; ?>
                 </a>
             </div>
@@ -207,20 +222,27 @@ function getYouTubeID($url) {
                     $sidebar_posts = array_slice($posts, 0, 4);
                     // Remove sidebar posts from main posts loop
                     $posts = array_slice($posts, 4);
-                    foreach($sidebar_posts as $sp): ?>
-                    <div class="relative pl-6 border-b border-dashed border-slate-200 pb-8 last:border-0">
-                        <div class="absolute left-0 top-1.5 w-2 h-2 rounded-full bg-blue-600"></div>
-                        <span class="text-[11px] font-black text-slate-400 uppercase tracking-tighter mb-2 block">
-                            <?php
-                                $time_ago = floor((time() - strtotime($sp['created_at'])) / 3600);
-                                echo $time_ago > 0 ? $time_ago . "h ago" : "Just now";
-                            ?>
-                        </span>
-                        <h4 class="text-[16px] font-black leading-snug text-slate-900 hover:text-blue-600 transition">
-                            <a href="story?title=<?php echo urlencode($sp['seo_title']); ?>"><?php echo htmlspecialchars($sp['title']); ?></a>
-                        </h4>
-                    </div>
-                    <?php endforeach; ?>
+
+                    if (empty($sidebar_posts)): ?>
+                        <div class="py-12 text-center border-b border-dashed border-slate-200">
+                            <p class="text-slate-400 font-bold text-xs uppercase tracking-widest">Sidebar Archive Empty</p>
+                        </div>
+                    <?php else:
+                        foreach($sidebar_posts as $sp): ?>
+                        <div class="relative pl-6 border-b border-dashed border-slate-200 pb-8 last:border-0">
+                            <div class="absolute left-0 top-1.5 w-2 h-2 rounded-full bg-blue-600"></div>
+                            <span class="text-[11px] font-black text-slate-400 uppercase tracking-tighter mb-2 block">
+                                <?php
+                                    $time_ago = floor((time() - strtotime($sp['created_at'])) / 3600);
+                                    echo $time_ago > 0 ? $time_ago . "h ago" : "Just now";
+                                ?>
+                            </span>
+                            <h4 class="text-[16px] font-black leading-snug text-slate-900 hover:text-blue-600 transition">
+                                <a href="story?title=<?php echo urlencode($sp['seo_title']); ?>"><?php echo htmlspecialchars($sp['title']); ?></a>
+                            </h4>
+                        </div>
+                        <?php endforeach;
+                    endif; ?>
                 </div>
             </div>
         </section>
@@ -257,6 +279,7 @@ function getYouTubeID($url) {
         <?php endif; ?>
 
         <!-- Secondary Grid -->
+        <?php if (!empty($posts)): ?>
         <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pt-10">
             <?php foreach ($posts as $post): ?>
             <article class="group flex flex-col space-y-5 border-b border-slate-50 pb-10 mb-10 last:border-0 last:mb-0 last:pb-0">
@@ -283,6 +306,8 @@ function getYouTubeID($url) {
             </article>
             <?php endforeach; ?>
         </section>
+        <?php endif; ?>
+
         <?php else: ?>
             <div class="text-center py-32">
                 <h2 class="text-4xl font-black mb-4">The press is quiet today.</h2>
