@@ -21,7 +21,7 @@ try {
 
     if ($catTableCheck) {
         // Fetch categories for navigation
-        $stmt_nav = $pdo->query("SELECT * FROM categories ORDER BY name ASC LIMIT 5");
+        $stmt_nav = $pdo->query("SELECT * FROM categories ORDER BY name ASC");
         $nav_categories = $stmt_nav->fetchAll();
 
         // Category filtering
