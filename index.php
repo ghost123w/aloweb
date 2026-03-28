@@ -6,49 +6,50 @@ if (!file_exists(__DIR__ . '/includes/config.php')) {
 
 require_once 'includes/config.php';
 
-// Initialize variables to prevent "Undefined variable" warnings
+// Debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Initialize variables
 $settings = [];
 $nav_categories = [];
 $posts = [];
 $hero = null;
-$catTableCheck = false;
 $db_error = null;
 
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    // Force database repair to ensure schema consistency
+    require_once 'includes/functions.php';
+    repairDatabase($pdo);
+
     $stmt_settings = $pdo->query("SELECT * FROM settings LIMIT 1");
-    $settings_data = $stmt_settings->fetch();
-    if ($settings_data) $settings = $settings_data;
+    $settings = $stmt_settings->fetch(PDO::FETCH_ASSOC) ?: [];
 
-    // Check if categories table exists
-    $catTableCheck = $pdo->query("SHOW TABLES LIKE 'categories'")->rowCount() > 0;
+    // Fetch categories for navigation
+    $stmt_nav = $pdo->query("SELECT * FROM categories ORDER BY name ASC");
+    $nav_categories = $stmt_nav->fetchAll(PDO::FETCH_ASSOC);
 
-    if ($catTableCheck) {
-        // Fetch categories for navigation
-        $stmt_nav = $pdo->query("SELECT * FROM categories ORDER BY name ASC");
-        $nav_categories = $stmt_nav->fetchAll();
+    // Fetch ALL posts (Removed LIMIT to satisfy requirement)
+    $category_slug = $_GET['category'] ?? null;
 
-        // Category filtering
-        $category_slug = $_GET['category'] ?? null;
+    try {
         if ($category_slug) {
-            $stmt_posts = $pdo->prepare("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE c.slug = ? ORDER BY p.created_at DESC LIMIT 15");
+            $stmt_posts = $pdo->prepare("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE c.slug = ? ORDER BY p.id DESC");
             $stmt_posts->execute([$category_slug]);
         } else {
-            $stmt_posts = $pdo->query("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.created_at DESC LIMIT 15");
+            $stmt_posts = $pdo->query("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.id DESC");
         }
-        $posts = $stmt_posts->fetchAll();
-    } else {
-        // Fallback for legacy schema
-        $postsTableCheck = $pdo->query("SHOW TABLES LIKE 'posts'")->rowCount() > 0;
-        if ($postsTableCheck) {
-            $stmt_posts = $pdo->query("SELECT *, NULL as category_name, NULL as category_slug FROM posts ORDER BY created_at DESC LIMIT 15");
-            $posts = $stmt_posts->fetchAll();
-        }
+        $posts = $stmt_posts->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        // Fallback for missing columns or join errors
+        $stmt_posts = $pdo->query("SELECT * FROM posts ORDER BY id DESC");
+        $posts = $stmt_posts->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Assign hero from the top post
+    // Hero from the top post
     if (!empty($posts)) {
         $hero = array_shift($posts);
     }
@@ -153,8 +154,8 @@ function getYouTubeID($url) {
 
             <!-- Hero Section -->
             <section class="relative aspect-[16/9] md:aspect-[21/9] overflow-hidden group">
-                <a href="story?title=<?php echo urlencode($hero['seo_title']); ?>">
-                    <?php if ($hero['featured_image']): ?>
+                <a href="story?<?php echo !empty($hero['seo_title']) ? 'title=' . urlencode($hero['seo_title']) : 'id=' . $hero['id']; ?>">
+                    <?php if (!empty($hero['featured_image'])): ?>
                         <img src="uploads/<?php echo htmlspecialchars($hero['featured_image']); ?>" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105">
                     <?php else: ?>
                         <div class="w-full h-full bg-zinc-900"></div>
@@ -176,7 +177,7 @@ function getYouTubeID($url) {
                 <?php else: ?>
                     <?php foreach ($posts as $post): ?>
                         <article class="p-6 md:p-10 hover:bg-white/[0.02] transition group">
-                            <a href="story?title=<?php echo urlencode($post['seo_title']); ?>" class="flex items-center space-x-6 md:space-x-10">
+                            <a href="story?<?php echo !empty($post['seo_title']) ? 'title=' . urlencode($post['seo_title']) : 'id=' . $post['id']; ?>" class="flex items-center space-x-6 md:space-x-10">
                                 <div class="w-32 h-20 md:w-48 md:h-32 flex-shrink-0 overflow-hidden rounded-sm">
                                     <?php if ($post['featured_image']): ?>
                                         <img src="uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
@@ -196,9 +197,12 @@ function getYouTubeID($url) {
             </section>
 
         <?php else: ?>
-            <div class="py-40 text-center">
-                <h2 class="text-zinc-800 font-black text-4xl italic tracking-tighter uppercase">The Press is Quiet</h2>
-                <p class="text-zinc-600 mt-4 font-bold uppercase tracking-widest text-xs">Awaiting the next breaking narrative</p>
+            <div class="py-40 text-center border-2 border-dashed border-white/10 rounded-3xl mx-6">
+                <h2 class="text-zinc-400 font-black text-4xl italic tracking-tighter uppercase mb-4">The Press is Quiet</h2>
+                <p class="text-zinc-600 font-bold uppercase tracking-widest text-xs">No articles were found in the archive.</p>
+                <div class="mt-10">
+                    <a href="admin/login" class="bg-white/5 hover:bg-white/10 text-white px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest transition">Initialize Narrative</a>
+                </div>
             </div>
         <?php endif; ?>
 

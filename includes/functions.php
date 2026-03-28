@@ -70,6 +70,16 @@ function verifyCSRFToken($token) {
 
 function repairDatabase($pdo) {
     try {
+        // 0. Users Table
+        $pdo->exec("CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL,
+            bio TEXT NULL,
+            profile_picture VARCHAR(255) NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )");
+
         // 1. Categories Table
         $pdo->exec("CREATE TABLE IF NOT EXISTS categories (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -103,6 +113,12 @@ function repairDatabase($pdo) {
         )");
 
         // 4. Posts Table columns
+        $pdo->exec("CREATE TABLE IF NOT EXISTS posts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            content TEXT NOT NULL
+        )");
+
         $columnsToAdd = [
             'seo_title' => "VARCHAR(255) AFTER content",
             'featured_image' => "VARCHAR(255) AFTER seo_title",
@@ -110,7 +126,8 @@ function repairDatabase($pdo) {
             'category_id' => "INT NULL AFTER youtube_url",
             'meta_title' => "VARCHAR(255) AFTER category_id",
             'meta_keywords' => "TEXT AFTER meta_title",
-            'meta_description' => "TEXT AFTER meta_keywords"
+            'meta_description' => "TEXT AFTER meta_keywords",
+            'created_at' => "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
         ];
 
         $existingColumns = [];
@@ -137,6 +154,16 @@ function repairDatabase($pdo) {
         }
         if (!in_array('custom_header_code', $settingsCols)) {
             $pdo->exec("ALTER TABLE settings ADD COLUMN custom_header_code TEXT NULL");
+        }
+
+        // 6. Initialize default content if empty
+        $postCount = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
+        if ($postCount == 0) {
+            $pdo->exec("INSERT INTO posts (title, content, seo_title) VALUES
+                ('Welcome to NEWS5', 'This is your first story. You can manage your content through the admin dashboard.', 'welcome-to-news5'),
+                ('Architecture of Narrative', 'Exploring the structural elements of storytelling in the digital age.', 'architecture-of-narrative'),
+                ('Digital Connectivity', 'How technology is bridging the gap between storytellers and audiences.', 'digital-connectivity')
+            ");
         }
 
         return true;

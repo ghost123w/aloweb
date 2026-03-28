@@ -7,21 +7,34 @@ if (!file_exists(__DIR__ . '/includes/config.php')) {
 require_once 'includes/config.php';
 
 $title_slug = $_GET['title'] ?? '';
+$post_id = $_GET['id'] ?? '';
 
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    // Ensure database is in sync
+    require_once 'includes/functions.php';
+    repairDatabase($pdo);
+
     // Check if categories table exists
     $catTableCheck = $pdo->query("SHOW TABLES LIKE 'categories'")->rowCount() > 0;
 
-    if ($catTableCheck) {
-        $stmt = $pdo->prepare("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE p.seo_title = ? LIMIT 1");
+    if (!empty($title_slug)) {
+        if ($catTableCheck) {
+            $stmt = $pdo->prepare("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE p.seo_title = ? LIMIT 1");
+        } else {
+            $stmt = $pdo->prepare("SELECT *, NULL as category_name, NULL as category_slug FROM posts WHERE seo_title = ? LIMIT 1");
+        }
+        $stmt->execute([$title_slug]);
     } else {
-        $stmt = $pdo->prepare("SELECT *, NULL as category_name, NULL as category_slug FROM posts WHERE seo_title = ? LIMIT 1");
+        if ($catTableCheck) {
+            $stmt = $pdo->prepare("SELECT p.*, c.name as category_name, c.slug as category_slug FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = ? LIMIT 1");
+        } else {
+            $stmt = $pdo->prepare("SELECT *, NULL as category_name, NULL as category_slug FROM posts WHERE id = ? LIMIT 1");
+        }
+        $stmt->execute([$post_id]);
     }
-
-    $stmt->execute([$title_slug]);
     $post = $stmt->fetch();
 
     if (!$post) {
