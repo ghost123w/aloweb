@@ -21,24 +21,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch();
 
         if ($user) {
-            $token = bin2hex(random_bytes(32));
-            $expires = date("Y-m-d H:i:s", strtotime("+1 hour"));
+            $otp = sprintf("%06d", random_int(0, 999999));
+            $expires = date("Y-m-d H:i:s", strtotime("+15 minutes"));
 
             // Delete existing tokens for this email
             $stmt = $pdo->prepare("DELETE FROM password_resets WHERE email = ?");
             $stmt->execute([$email]);
 
-            // Insert new token
+            // Insert new token (OTP)
             $stmt = $pdo->prepare("INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)");
-            $stmt->execute([$email, $token, $expires]);
+            $stmt->execute([$email, $otp, $expires]);
 
-            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-            $reset_link = "$protocol://{$_SERVER['HTTP_HOST']}/admin/reset_password?token=$token";
+            $message = "Your password reset OTP is: <b style='font-size: 24px;'>$otp</b><br><br>This OTP will expire in 15 minutes.";
 
-            $message = "You requested a password reset. Click the link below to reset your password. This link will expire in 1 hour.<br><br><a href='$reset_link'>$reset_link</a>";
-
-            if (sendNotification($email, "Password Reset Request", $message)) {
-                $success = "Recovery link sent to your email.";
+            if (sendNotification($email, "Password Reset OTP", $message)) {
+                $_SESSION['reset_email'] = $email;
+                header("Location: reset_password");
+                exit;
             } else {
                 $error = "Failed to send recovery email. Please check your SMTP settings or server mail configuration.";
             }
@@ -118,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="email" name="email" required class="w-full px-6 py-5 rounded-2xl outline-none transition font-bold" placeholder="archivist@storyline.io">
             </div>
             <button type="submit" class="w-full bg-blue-600 text-white py-6 rounded-2xl font-black text-xl hover:bg-blue-700 transition shadow-2xl shadow-blue-500/30 active:scale-[0.98]">
-                Request Link
+                Send OTP
             </button>
         </form>
 
