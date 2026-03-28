@@ -322,14 +322,6 @@ function getYouTubeID($url) {
         </section>
         <?php endif; ?>
 
-        <?php else: ?>
-            <div class="max-w-7xl mx-auto px-4 py-20">
-                <div class="bg-white rounded-[4rem] border-2 border-dashed border-slate-200 p-20 flex flex-col items-center justify-center min-h-[500px] text-center space-y-8">
-                    <h2 class="text-5xl md:text-6xl font-black italic text-slate-900 tracking-tighter">The press is quiet today.</h2>
-                    <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-xs">Waiting for the next big story to break.</p>
-                    <a href="admin/login" class="bg-blue-600 text-white px-12 py-5 rounded-3xl font-black text-lg hover:bg-blue-700 transition shadow-2xl shadow-blue-600/30 active:scale-95">Initialize First Story</a>
-                </div>
-            </div>
         <?php endif; ?>
 
         <!-- Category Discovery Section (Always Visible) -->
