@@ -77,3 +77,9 @@ Stack trace:
 #1 {main}
   thrown in /app/index.php on line 85
 [Fri Mar 27 06:32:35 2026] 127.0.0.1:57242 Closing
+[Sat Mar 28 12:29:27 2026] 127.0.0.1:40274 Accepted
+[Sat Mar 28 12:29:27 2026] 127.0.0.1:40274 [302]: GET /index.php
+[Sat Mar 28 12:29:27 2026] 127.0.0.1:40274 Closing
+[Sat Mar 28 12:29:27 2026] 127.0.0.1:40276 Accepted
+[Sat Mar 28 12:29:27 2026] 127.0.0.1:40276 [200]: GET /install/index
+[Sat Mar 28 12:29:27 2026] 127.0.0.1:40276 Closing

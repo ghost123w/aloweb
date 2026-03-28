@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!file_exists('../includes/config.php')) {
-    header("Location: ../install/index.php");
+    header("Location: ../install/index");
     exit;
 }
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
@@ -15,6 +15,7 @@ $total_posts = 0;
 $total_categories = 0;
 $total_subscribers = 0;
 $cat_stats = [];
+$db_error = null;
 
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
@@ -46,7 +47,7 @@ try {
     }
 
 } catch (PDOException $e) {
-    // Connection error handled gracefully by initialized defaults
+    $db_error = $e->getMessage();
 }
 ?>
 <!DOCTYPE html>
@@ -109,7 +110,7 @@ try {
         </div>
         <nav class="flex-grow space-y-2">
             <a href="index" class="sidebar-item active flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v-2a2 2 0 01-2-2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v-2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                 <span>Dashboard</span>
             </a>
             <a href="posts" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
@@ -140,6 +141,17 @@ try {
     <!-- Main Content -->
     <main class="flex-grow ml-72 p-12 overflow-auto">
         <div class="max-w-6xl mx-auto">
+            <?php if ($db_error): ?>
+                <div class="bg-rose-50 border-2 border-rose-100 p-12 rounded-[3rem] text-center my-10">
+                    <h2 class="text-rose-700 font-black text-3xl mb-4 italic tracking-tight">Database Connectivity Alert</h2>
+                    <p class="text-rose-600 font-bold mb-10 max-w-2xl mx-auto leading-relaxed"><?php echo htmlspecialchars($db_error); ?></p>
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+                        <a href="../install/index" class="bg-rose-600 text-white px-10 py-4 rounded-2xl font-black text-lg hover:bg-rose-700 transition shadow-xl shadow-rose-600/20">Re-run System Installer</a>
+                        <a href="index" class="text-rose-400 font-bold hover:text-rose-600 transition">Retry Connection</a>
+                    </div>
+                </div>
+            <?php else: ?>
+
             <?php if ($migration_needed): ?>
                 <div class="bg-amber-50 border-2 border-amber-200 p-8 rounded-3xl mb-12 flex items-center justify-between">
                     <div>
@@ -259,6 +271,7 @@ try {
                     }
                 });
             </script>
+            <?php endif; ?>
         </div>
     </main>
 

@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!file_exists('../includes/config.php')) {
-    header("Location: ../install/index.php");
+    header("Location: ../install/index");
     exit;
 }
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
@@ -11,6 +11,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 require_once '../includes/config.php';
 require_once '../includes/functions.php';
 
+$db_error = null;
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -185,7 +186,7 @@ try {
     <main class="flex-grow ml-72 p-12 overflow-auto">
         <div class="max-w-5xl mx-auto">
             <?php if (isset($error)): ?>
-                <div class="bg-rose-500/10 text-rose-400 p-6 rounded-[2rem] mb-10 border border-rose-500/20 flex items-center space-x-4 font-bold shadow-lg shadow-rose-500/5">
+                <div class="bg-rose-50/10 text-rose-400 p-6 rounded-[2rem] mb-10 border border-rose-500/20 flex items-center space-x-4 font-bold shadow-lg shadow-rose-500/5">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <span><?php echo $error; ?></span>
                 </div>
@@ -340,7 +341,7 @@ try {
         </nav>
         <div class="border-t border-white/5 pt-6">
             <a href="logout" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold text-rose-500/80">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
                 <span>Logout</span>
             </a>
         </div>
@@ -385,7 +386,7 @@ try {
                         <form action="categories?action=delete&id=<?php echo $cat['id']; ?>" method="POST" onsubmit="return confirm('Erase this node from the system?')" class="inline">
                             <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                             <button type="submit" class="w-12 h-12 flex items-center justify-center text-rose-500/40 hover:text-rose-500 hover:bg-rose-500/10 border border-white/5 rounded-2xl transition-all active:scale-90">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                             </button>
                         </form>
                     </div>
@@ -396,10 +397,32 @@ try {
     </main>
 </body>
 </html>
-        <?php
-    }
-
-} catch (PDOException $e) {
-    die("Database error: " . $e->getMessage());
-}
-?>
+<?php } catch (PDOException $e) { $db_error = $e->getMessage(); ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connectivity Alert - YourStoryline Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0c0e14; color: #ffffff; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-6 relative overflow-hidden">
+    <div class="fixed top-0 right-0 w-[500px] h-[500px] bg-rose-600/10 rounded-full blur-[120px] -z-10 -mr-64 -mt-64"></div>
+    <div class="max-w-2xl w-full bg-[#11131a] border-2 border-rose-500/20 p-12 rounded-[3rem] text-center shadow-2xl">
+        <div class="w-20 h-20 bg-rose-600/10 rounded-3xl flex items-center justify-center mx-auto mb-8">
+            <svg class="w-10 h-10 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        </div>
+        <h2 class="text-3xl font-black text-white mb-4 tracking-tight">Database Connectivity Issue</h2>
+        <p class="text-slate-400 font-bold mb-10 leading-relaxed uppercase text-xs tracking-[0.2em]"><?php echo htmlspecialchars($db_error); ?></p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+            <a href="../install/index" class="w-full sm:w-auto bg-rose-600 text-white px-10 py-4 rounded-2xl font-black text-lg hover:bg-rose-700 transition shadow-xl shadow-rose-600/20">Launch Installer</a>
+            <a href="categories" class="text-slate-500 font-bold hover:text-white transition uppercase text-xs tracking-widest">Retry Link</a>
+        </div>
+    </div>
+</body>
+</html>
+<?php } ?>
