@@ -68,8 +68,12 @@ function getYouTubeID($url) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YourStoryline - Premium Magazine</title>
+    <?php if (!empty($settings['logo'])): ?>
+    <link rel="icon" type="image/<?php echo pathinfo($settings['logo'], PATHINFO_EXTENSION); ?>" href="uploads/<?php echo htmlspecialchars($settings['logo']); ?>">
+    <?php endif; ?>
     <meta name="keywords" content="<?php echo htmlspecialchars($settings['meta_keywords'] ?? ''); ?>">
     <meta name="description" content="<?php echo htmlspecialchars($settings['meta_description'] ?? ''); ?>">
+    <?php echo $settings['custom_header_code'] ?? ''; ?>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -86,8 +90,12 @@ function getYouTubeID($url) {
         <div class="max-w-[1400px] mx-auto px-4 md:px-8 flex justify-between items-center">
             <div class="flex items-center space-x-10">
                 <a href="index" class="flex items-center space-x-2">
-                    <span class="text-2xl font-[900] tracking-tighter text-slate-900">STORYLINE</span>
-                    <span class="text-2xl font-[900] tracking-tighter text-blue-600">NEWS</span>
+                    <?php if (!empty($settings['logo'])): ?>
+                        <img src="uploads/<?php echo htmlspecialchars($settings['logo']); ?>" alt="Logo" class="h-10 w-auto object-contain">
+                    <?php else: ?>
+                        <span class="text-2xl font-[900] tracking-tighter text-slate-900">STORYLINE</span>
+                        <span class="text-2xl font-[900] tracking-tighter text-blue-600">NEWS</span>
+                    <?php endif; ?>
                 </a>
                 <div class="hidden lg:flex items-center space-x-6 text-[13px] font-black uppercase tracking-tight text-slate-700">
                     <a href="index" class="hover:text-blue-600 transition">Latest</a>

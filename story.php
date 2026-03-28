@@ -53,8 +53,12 @@ $meta_description = !empty($post['meta_description']) ? $post['meta_description'
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($meta_title); ?></title>
+    <?php if (!empty($settings['logo'])): ?>
+    <link rel="icon" type="image/<?php echo pathinfo($settings['logo'], PATHINFO_EXTENSION); ?>" href="uploads/<?php echo htmlspecialchars($settings['logo']); ?>">
+    <?php endif; ?>
     <meta name="keywords" content="<?php echo htmlspecialchars($meta_keywords); ?>">
     <meta name="description" content="<?php echo htmlspecialchars($meta_description); ?>">
+    <?php echo $settings['custom_header_code'] ?? ''; ?>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -67,7 +71,13 @@ $meta_description = !empty($post['meta_description']) ? $post['meta_description'
     <!-- Navigation -->
     <nav class="border-b border-slate-100 py-6 sticky top-0 bg-white/80 backdrop-blur-md z-50">
         <div class="max-w-4xl mx-auto px-6 flex justify-between items-center">
-            <a href="index" class="text-2xl font-black tracking-tighter text-slate-900 uppercase">YourStoryline</a>
+            <a href="index" class="flex items-center space-x-2">
+                <?php if (!empty($settings['logo'])): ?>
+                    <img src="uploads/<?php echo htmlspecialchars($settings['logo']); ?>" alt="Logo" class="h-10 w-auto object-contain">
+                <?php else: ?>
+                    <span class="text-2xl font-black tracking-tighter text-slate-900 uppercase">YourStoryline</span>
+                <?php endif; ?>
+            </a>
             <a href="index" class="text-sm font-bold text-slate-400 hover:text-slate-900 transition uppercase tracking-widest">Back to Stories</a>
         </div>
     </nav>

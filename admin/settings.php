@@ -16,6 +16,9 @@ try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    // Initial check for columns
+    repairDatabase($pdo);
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
             die("CSRF token validation failed.");
@@ -28,17 +31,31 @@ try {
         $smtp_pass = $_POST['smtp_pass'];
         $smtp_enc = $_POST['smtp_enc'];
         $site_signature = $_POST['site_signature'];
+        $custom_header_code = $_POST['custom_header_code'];
 
-        $stmt = $pdo->prepare("SELECT id FROM settings LIMIT 1");
+        $stmt = $pdo->prepare("SELECT * FROM settings LIMIT 1");
         $stmt->execute();
         $setting = $stmt->fetch();
 
+        $logo = $setting['logo'] ?? '';
+        if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
+            $upload_dir = '../uploads/';
+            $file_ext = strtolower(pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION));
+            $allowed_ext = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'ico'];
+            if (in_array($file_ext, $allowed_ext)) {
+                $new_file_name = 'logo_' . time() . '.' . $file_ext;
+                if (move_uploaded_file($_FILES['logo']['tmp_name'], $upload_dir . $new_file_name)) {
+                    $logo = $new_file_name;
+                }
+            }
+        }
+
         if ($setting) {
-            $stmt = $pdo->prepare("UPDATE settings SET meta_keywords = ?, meta_description = ?, smtp_host = ?, smtp_port = ?, smtp_user = ?, smtp_pass = ?, smtp_enc = ?, site_signature = ? WHERE id = ?");
-            $stmt->execute([$keywords, $description, $smtp_host, $smtp_port, $smtp_user, $smtp_pass, $smtp_enc, $site_signature, $setting['id']]);
+            $stmt = $pdo->prepare("UPDATE settings SET meta_keywords = ?, meta_description = ?, smtp_host = ?, smtp_port = ?, smtp_user = ?, smtp_pass = ?, smtp_enc = ?, site_signature = ?, logo = ?, custom_header_code = ? WHERE id = ?");
+            $stmt->execute([$keywords, $description, $smtp_host, $smtp_port, $smtp_user, $smtp_pass, $smtp_enc, $site_signature, $logo, $custom_header_code, $setting['id']]);
         } else {
-            $stmt = $pdo->prepare("INSERT INTO settings (meta_keywords, meta_description, smtp_host, smtp_port, smtp_user, smtp_pass, smtp_enc, site_signature) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$keywords, $description, $smtp_host, $smtp_port, $smtp_user, $smtp_pass, $smtp_enc, $site_signature]);
+            $stmt = $pdo->prepare("INSERT INTO settings (meta_keywords, meta_description, smtp_host, smtp_port, smtp_user, smtp_pass, smtp_enc, site_signature, logo, custom_header_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$keywords, $description, $smtp_host, $smtp_port, $smtp_user, $smtp_pass, $smtp_enc, $site_signature, $logo, $custom_header_code]);
         }
         $message = "Settings updated successfully.";
     }
@@ -150,8 +167,31 @@ try {
                 </div>
             <?php endif; ?>
 
-            <form method="post" class="space-y-10">
+            <form method="post" enctype="multipart/form-data" class="space-y-10">
                 <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
+
+                <!-- Branding Section -->
+                <section class="glass-card p-10 rounded-[3rem] space-y-10">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-1.5 h-8 bg-blue-600 rounded-full"></div>
+                        <h2 class="text-2xl font-black text-white tracking-tight">Identity Branding</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div class="space-y-6">
+                            <label class="block text-[10px] font-black text-slate-500 ml-1 uppercase tracking-[0.2em]">Platform Logo / Favicon</label>
+                            <input type="file" name="logo" class="w-full text-xs text-slate-500 file:mr-6 file:py-3 file:px-8 file:rounded-2xl file:border-0 file:text-xs file:font-black file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition cursor-pointer">
+                            <p class="text-[10px] text-slate-500 font-bold italic">Supports JPG, PNG, WEBP, ICO. This will also be used as the site favicon.</p>
+                        </div>
+                        <?php if (!empty($settings['logo'])): ?>
+                        <div class="flex justify-center md:justify-end">
+                            <div class="p-4 bg-white/5 rounded-3xl border border-white/10">
+                                <img src="../uploads/<?php echo htmlspecialchars($settings['logo']); ?>" class="max-h-20 object-contain rounded-lg shadow-2xl">
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </section>
 
                 <!-- SEO Intelligence Section -->
                 <section class="glass-card p-10 rounded-[3rem] space-y-10">
@@ -169,6 +209,18 @@ try {
                             <label class="block text-[10px] font-black text-slate-500 ml-1 uppercase tracking-[0.2em]">Global Narrative Meta</label>
                             <textarea name="meta_description" rows="3" class="w-full px-8 py-6 rounded-[2rem] outline-none text-sm font-bold placeholder:text-slate-800" placeholder="How should search engines perceive this platform?"><?php echo htmlspecialchars($settings['meta_description'] ?? ''); ?></textarea>
                         </div>
+                    </div>
+                </section>
+
+                <!-- Custom Integration Section -->
+                <section class="glass-card p-10 rounded-[3rem] space-y-10">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-1.5 h-8 bg-cyan-600 rounded-full"></div>
+                        <h2 class="text-2xl font-black text-white tracking-tight">Custom Integrations</h2>
+                    </div>
+                    <div class="space-y-6">
+                        <label class="block text-[10px] font-black text-slate-500 ml-1 uppercase tracking-[0.2em]">Header Injection (Analytics/Custom Scripts)</label>
+                        <textarea name="custom_header_code" rows="6" class="w-full px-8 py-6 rounded-[2rem] outline-none text-sm font-mono placeholder:text-slate-800" placeholder="<!-- Paste Google Analytics, Meta Pixel, or custom CSS here -->"><?php echo htmlspecialchars($settings['custom_header_code'] ?? ''); ?></textarea>
                     </div>
                 </section>
 

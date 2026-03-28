@@ -125,6 +125,20 @@ function repairDatabase($pdo) {
             }
         }
 
+        // 5. Settings Table columns
+        $settingsCols = [];
+        $stmt = $pdo->query("SHOW COLUMNS FROM settings");
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $settingsCols[] = $row['Field'];
+        }
+
+        if (!in_array('logo', $settingsCols)) {
+            $pdo->exec("ALTER TABLE settings ADD COLUMN logo VARCHAR(255) NULL");
+        }
+        if (!in_array('custom_header_code', $settingsCols)) {
+            $pdo->exec("ALTER TABLE settings ADD COLUMN custom_header_code TEXT NULL");
+        }
+
         return true;
     } catch (PDOException $e) {
         error_log("Database Repair Error: " . $e->getMessage());
