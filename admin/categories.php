@@ -397,7 +397,9 @@ try {
     </main>
 </body>
 </html>
-<?php } catch (PDOException $e) { $db_error = $e->getMessage(); ?>
+<?php
+    }
+} catch (PDOException $e) { $db_error = $e->getMessage(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -1,19 +1,16 @@
-[Sat Mar 28 13:32:58 2026] PHP 8.3.6 Development Server (http://0.0.0.0:8000) started
-[Sat Mar 28 13:33:39 2026] 127.0.0.1:50024 Accepted
-[Sat Mar 28 13:33:39 2026] 127.0.0.1:50024 [302]: GET /admin/login.php
-[Sat Mar 28 13:33:39 2026] 127.0.0.1:50024 Closing
-[Sat Mar 28 13:33:39 2026] 127.0.0.1:50028 Accepted
-[Sat Mar 28 13:33:39 2026] 127.0.0.1:50028 [200]: GET /install/index
-[Sat Mar 28 13:33:39 2026] 127.0.0.1:50028 Closing
-[Sat Mar 28 13:36:04 2026] 127.0.0.1:37678 Accepted
-[Sat Mar 28 13:36:04 2026] 127.0.0.1:37678 [302]: GET /admin/login.php
-[Sat Mar 28 13:36:04 2026] 127.0.0.1:37678 Closing
-[Sat Mar 28 13:36:04 2026] 127.0.0.1:37684 Accepted
-[Sat Mar 28 13:36:04 2026] 127.0.0.1:37684 [200]: GET /install/index
-[Sat Mar 28 13:36:04 2026] 127.0.0.1:37684 Closing
-[Sat Mar 28 13:41:30 2026] 127.0.0.1:60630 Accepted
-[Sat Mar 28 13:41:30 2026] 127.0.0.1:60630 [302]: GET /admin/login.php
-[Sat Mar 28 13:41:30 2026] 127.0.0.1:60630 Closing
-[Sat Mar 28 13:41:30 2026] 127.0.0.1:60632 Accepted
-[Sat Mar 28 13:41:30 2026] 127.0.0.1:60632 [200]: GET /install/index
-[Sat Mar 28 13:41:30 2026] 127.0.0.1:60632 Closing
+[Sat Mar 28 14:52:43 2026] PHP 8.3.6 Development Server (http://localhost:8000) started
+[Sat Mar 28 14:53:42 2026] [::1]:54670 Accepted
+[Sat Mar 28 14:53:42 2026] [::1]:54670 [302]: GET /
+[Sat Mar 28 14:53:42 2026] [::1]:54670 Closing
+[Sat Mar 28 14:53:42 2026] [::1]:54684 Accepted
+[Sat Mar 28 14:53:42 2026] [::1]:54684 [200]: GET /install/index
+[Sat Mar 28 14:53:42 2026] [::1]:54684 Closing
+[Sat Mar 28 14:55:51 2026] [::1]:53350 Accepted
+[Sat Mar 28 14:55:51 2026] [::1]:53350 [302]: GET /
+[Sat Mar 28 14:55:51 2026] [::1]:53350 Closing
+[Sat Mar 28 14:55:51 2026] [::1]:53364 Accepted
+[Sat Mar 28 14:55:51 2026] [::1]:53364 [200]: GET /install/index
+[Sat Mar 28 14:55:51 2026] [::1]:53364 Closing
+[Sat Mar 28 14:58:29 2026] [::1]:54812 Accepted
+[Sat Mar 28 14:58:29 2026] [::1]:54812 [200]: GET /
+[Sat Mar 28 14:58:29 2026] [::1]:54812 Closing
