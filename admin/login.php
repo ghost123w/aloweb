@@ -98,8 +98,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </button>
         </form>
 
-        <div class="mt-12 text-center">
-            <a href="../index" class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 hover:text-white transition">← Return to Interface</a>
+        <div class="mt-12 text-center space-y-4">
+            <a href="forgot_password" class="block text-[10px] font-black uppercase tracking-[0.3em] text-blue-500 hover:text-blue-400 transition">Forgot Password?</a>
+            <a href="../index" class="block text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 hover:text-white transition">← Return to Interface</a>
         </div>
     </div>
 </body>

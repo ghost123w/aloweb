@@ -31,6 +31,8 @@ function sendNotification($to, $subject, $message) {
             } elseif ($settings['smtp_enc'] === 'ssl') {
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             }
+        } else {
+            $mail->isMail();
         }
 
         $mail->setFrom($settings['smtp_user'] ?? 'no-reply@yourstoryline.com', 'Storyline System');

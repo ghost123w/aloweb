@@ -73,6 +73,18 @@ try {
         echo "Note: Foreign key constraint might already exist or could not be added: " . $e->getMessage() . "\n";
     }
 
+    // 3. Create Password Resets Table
+    $pdo->exec("CREATE TABLE IF NOT EXISTS password_resets (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(255) NOT NULL,
+        token VARCHAR(255) NOT NULL,
+        expires_at DATETIME NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX (email),
+        INDEX (token)
+    )");
+    echo "Password Resets table checked/created.\n";
+
     echo "Migration completed successfully.\n";
 
 } catch (PDOException $e) {
