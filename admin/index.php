@@ -110,8 +110,22 @@ try {
 </head>
 <body class="flex min-h-screen relative overflow-x-hidden">
 
+    <!-- Mobile Header -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 bg-[#0d0f16] z-40 p-4 border-b border-white/5 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-black text-white">S</div>
+            <span class="font-black text-white">Storyline</span>
+        </div>
+        <button onclick="toggleSidebar()" class="p-2 text-slate-400 hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden"></div>
+
     <!-- Sidebar -->
-    <aside class="w-72 bg-[#0d0f16] text-slate-400 flex flex-col p-8 space-y-10 shadow-2xl fixed h-full z-50 border-r border-white/5">
+    <aside id="sidebar" class="w-72 bg-[#0d0f16] text-slate-400 flex flex-col p-8 space-y-10 shadow-2xl fixed h-full z-50 border-r border-white/5 transition-transform duration-300 -translate-x-full lg:translate-x-0">
         <div class="flex items-center space-x-4">
             <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-lg shadow-blue-500/20">S</div>
             <h2 class="text-2xl font-black tracking-tighter text-white">Storyline</h2>
@@ -147,7 +161,7 @@ try {
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-grow ml-72 p-12 overflow-auto">
+    <main class="flex-grow ml-0 lg:ml-72 p-6 lg:p-12 mt-16 lg:mt-0 overflow-auto">
         <div class="max-w-6xl mx-auto">
             <?php if ($db_error): ?>
                 <div class="bg-rose-50 border-2 border-rose-100 p-12 rounded-[3rem] text-center my-10">
@@ -257,6 +271,13 @@ try {
             </div>
 
             <script>
+                function toggleSidebar() {
+                    const sidebar = document.getElementById('sidebar');
+                    const overlay = document.getElementById('sidebar-overlay');
+                    sidebar.classList.toggle('-translate-x-full');
+                    overlay.classList.toggle('hidden');
+                }
+
                 const ctx = document.getElementById('categoryChart').getContext('2d');
                 new Chart(ctx, {
                     type: 'bar',
