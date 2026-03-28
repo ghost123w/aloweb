@@ -10,6 +10,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 }
 
 require_once '../includes/config.php';
+require_once '../includes/functions.php';
 $migration_needed = false;
 $total_posts = 0;
 $total_categories = 0;
@@ -44,6 +45,13 @@ try {
 
     if ($pdo->query("SHOW TABLES LIKE 'subscribers'")->rowCount() > 0) {
         $total_subscribers = $pdo->query("SELECT COUNT(*) FROM subscribers")->fetchColumn();
+    }
+
+    if (isset($_GET['repair'])) {
+        if (repairDatabase($pdo)) {
+            header("Location: index?repaired=1");
+            exit;
+        }
     }
 
 } catch (PDOException $e) {
@@ -152,13 +160,25 @@ try {
                 </div>
             <?php else: ?>
 
+            <?php if (isset($_GET['repaired'])): ?>
+                <div class="bg-teal-50 border-2 border-teal-200 p-8 rounded-3xl mb-12 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-teal-800 font-black text-xl mb-1">System Repaired</h2>
+                        <p class="text-teal-700">Database schema has been successfully synchronized.</p>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <?php if ($migration_needed): ?>
                 <div class="bg-amber-50 border-2 border-amber-200 p-8 rounded-3xl mb-12 flex items-center justify-between">
                     <div>
                         <h2 class="text-amber-800 font-black text-xl mb-1">Database Update Required</h2>
                         <p class="text-amber-700">Your installation needs a quick update to support the new Category and SEO features.</p>
                     </div>
-                    <a href="../migrate_v1.1.php" class="bg-amber-600 text-white px-8 py-3 rounded-2xl font-black hover:bg-amber-700 transition shadow-xl shadow-amber-600/20">Run Migration Now</a>
+                    <div class="flex space-x-4">
+                        <a href="index?repair=1" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-black hover:bg-blue-700 transition shadow-xl shadow-blue-600/20 text-center">Auto-Repair</a>
+                        <a href="../migrate_v1.1.php" class="bg-amber-600 text-white px-8 py-3 rounded-2xl font-black hover:bg-amber-700 transition shadow-xl shadow-amber-600/20 text-center">Run Migration</a>
+                    </div>
                 </div>
             <?php endif; ?>
 

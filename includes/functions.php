@@ -67,4 +67,68 @@ function verifyCSRFToken($token) {
     }
     return false;
 }
+
+function repairDatabase($pdo) {
+    try {
+        // 1. Categories Table
+        $pdo->exec("CREATE TABLE IF NOT EXISTS categories (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            slug VARCHAR(100) NOT NULL UNIQUE,
+            image VARCHAR(255) NULL
+        )");
+
+        // Ensure image column exists
+        $stmt = $pdo->query("SHOW COLUMNS FROM categories LIKE 'image'");
+        if ($stmt->rowCount() == 0) {
+            $pdo->exec("ALTER TABLE categories ADD COLUMN image VARCHAR(255) NULL AFTER slug");
+        }
+
+        // 2. Password Resets Table
+        $pdo->exec("CREATE TABLE IF NOT EXISTS password_resets (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            email VARCHAR(255) NOT NULL,
+            token VARCHAR(255) NOT NULL,
+            expires_at DATETIME NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX (email),
+            INDEX (token)
+        )");
+
+        // 3. Subscribers Table
+        $pdo->exec("CREATE TABLE IF NOT EXISTS subscribers (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )");
+
+        // 4. Posts Table columns
+        $columnsToAdd = [
+            'seo_title' => "VARCHAR(255) AFTER content",
+            'featured_image' => "VARCHAR(255) AFTER seo_title",
+            'youtube_url' => "VARCHAR(255) AFTER featured_image",
+            'category_id' => "INT NULL AFTER youtube_url",
+            'meta_title' => "VARCHAR(255) AFTER category_id",
+            'meta_keywords' => "TEXT AFTER meta_title",
+            'meta_description' => "TEXT AFTER meta_keywords"
+        ];
+
+        $existingColumns = [];
+        $stmt = $pdo->query("SHOW COLUMNS FROM posts");
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $existingColumns[] = $row['Field'];
+        }
+
+        foreach ($columnsToAdd as $col => $definition) {
+            if (!in_array($col, $existingColumns)) {
+                $pdo->exec("ALTER TABLE posts ADD COLUMN $col $definition");
+            }
+        }
+
+        return true;
+    } catch (PDOException $e) {
+        error_log("Database Repair Error: " . $e->getMessage());
+        return false;
+    }
+}
 ?>

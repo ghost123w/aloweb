@@ -45,7 +45,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = "Email address not found.";
         }
     } catch (PDOException $e) {
-        $db_error = $e->getMessage();
+        if ($e->getCode() == '42S02') { // Table not found
+            repairDatabase($pdo);
+            // Retry the original logic once after repair
+            try {
+                $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+                $stmt->execute([$email]);
+                $user = $stmt->fetch();
+                if ($user) {
+                    $otp = sprintf("%06d", random_int(0, 999999));
+                    $expires = date("Y-m-d H:i:s", strtotime("+15 minutes"));
+                    $pdo->prepare("DELETE FROM password_resets WHERE email = ?")->execute([$email]);
+                    $pdo->prepare("INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)")->execute([$email, $otp, $expires]);
+                    $message = "Your password reset OTP is: <b style='font-size: 24px;'>$otp</b><br><br>This OTP will expire in 15 minutes.";
+                    if (sendNotification($email, "Password Reset OTP", $message)) {
+                        $_SESSION['reset_email'] = $email;
+                        header("Location: reset_password");
+                        exit;
+                    }
+                }
+            } catch (PDOException $ex) {
+                $db_error = $ex->getMessage();
+            }
+        } else {
+            $db_error = $e->getMessage();
+        }
     }
 }
 ?>

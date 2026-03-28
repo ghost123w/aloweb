@@ -49,7 +49,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (PDOException $e) {
             if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();
-            $db_error = $e->getMessage();
+            if ($e->getCode() == '42S02') { // Table not found
+                repairDatabase($pdo);
+                $error = "System tables were missing and have been repaired. Please try again.";
+            } else {
+                $db_error = $e->getMessage();
+            }
         }
     }
 }
