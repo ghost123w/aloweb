@@ -315,12 +315,43 @@ function getYouTubeID($url) {
         <?php endif; ?>
 
         <?php else: ?>
-            <div class="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
-                <h2 class="text-4xl font-black mb-4 italic tracking-tight">The press is quiet today.</h2>
-                <p class="text-slate-400 mb-10 font-bold uppercase tracking-widest text-xs">Waiting for the next big story to break.</p>
-                <a href="admin/login" class="bg-blue-600 text-white px-10 py-4 rounded-full font-black hover:bg-blue-700 transition shadow-xl shadow-blue-500/20">Initialize First Story</a>
+            <div class="max-w-7xl mx-auto px-4 py-20">
+                <div class="bg-white rounded-[4rem] border-2 border-dashed border-slate-200 p-20 flex flex-col items-center justify-center min-h-[500px] text-center space-y-8">
+                    <h2 class="text-5xl md:text-6xl font-black italic text-slate-900 tracking-tighter">The press is quiet today.</h2>
+                    <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-xs">Waiting for the next big story to break.</p>
+                    <a href="admin/login" class="bg-blue-600 text-white px-12 py-5 rounded-3xl font-black text-lg hover:bg-blue-700 transition shadow-2xl shadow-blue-600/30 active:scale-95">Initialize First Story</a>
+                </div>
             </div>
         <?php endif; ?>
+
+        <!-- Category Discovery Section (Always Visible) -->
+        <section class="mt-20 pt-20 border-t border-slate-100">
+            <div class="flex justify-between items-end mb-12">
+                <div>
+                    <h2 class="text-xs font-black uppercase tracking-[0.4em] text-blue-600 mb-2">Category Discovery</h2>
+                    <h3 class="text-3xl font-black text-slate-900 tracking-tighter">Explore the taxonomy.</h3>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+                <?php if (empty($nav_categories)): ?>
+                    <div class="col-span-full py-12 text-center text-slate-300 font-bold uppercase tracking-widest text-xs">Nodes initializing...</div>
+                <?php else: ?>
+                    <?php foreach ($nav_categories as $cat): ?>
+                    <a href="index?category=<?php echo urlencode($cat['slug']); ?>" class="group space-y-4 block">
+                        <div class="aspect-square rounded-[2rem] overflow-hidden bg-slate-50 border border-slate-100 relative shadow-sm transition-all duration-500 group-hover:shadow-blue-500/20 group-hover:-translate-y-1">
+                            <?php if ($cat['image']): ?>
+                                <img src="uploads/<?php echo htmlspecialchars($cat['image']); ?>" class="w-full h-full object-cover group-hover:scale-110 transition duration-700 opacity-90 group-hover:opacity-100">
+                            <?php else: ?>
+                                <div class="w-full h-full flex items-center justify-center text-slate-300 font-black text-2xl group-hover:bg-blue-50 transition duration-500">#</div>
+                            <?php endif; ?>
+                            <div class="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/5 transition duration-500"></div>
+                        </div>
+                        <span class="block text-[11px] font-black text-slate-900 uppercase tracking-tight group-hover:text-blue-600 transition text-center"><?php echo htmlspecialchars($cat['name']); ?></span>
+                    </a>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </section>
 
     </main>
 
