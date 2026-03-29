@@ -205,7 +205,6 @@ function getYouTubeID($url) {
                     <h2 class="text-red-600 font-black uppercase tracking-widest text-xs mb-2">Discovery</h2>
                     <h3 class="text-3xl font-black text-white tracking-tighter italic">Explore the taxonomy.</h3>
                 </div>
-                <a href="admin/login" class="bg-white/5 hover:bg-white/10 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition">Initialize Narrative</a>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
