@@ -128,9 +128,6 @@ function getYouTubeID($url) {
                     <a href="index?category=<?php echo urlencode($cat['slug']); ?>" class="block text-2xl font-black hover:text-red-600 transition"><?php echo htmlspecialchars($cat['name']); ?></a>
                 <?php endforeach; ?>
             </div>
-            <div class="mt-20 pt-10 border-t border-white/10">
-                <a href="admin/login" class="text-slate-500 font-bold uppercase tracking-widest text-xs hover:text-white transition">Admin Access</a>
-            </div>
         </div>
     </div>
 
@@ -234,7 +231,6 @@ function getYouTubeID($url) {
             <div class="text-2xl font-[900] tracking-tighter text-white italic uppercase">NEWS5</div>
             <div class="flex space-x-8 text-xs font-black uppercase tracking-widest text-slate-500">
                 <a href="index" class="hover:text-white transition">Home</a>
-                <a href="admin/login" class="hover:text-white transition">Admin</a>
                 <a href="subscribe" class="hover:text-white transition text-red-600">Subscribe</a>
             </div>
             <div class="text-[10px] font-bold text-zinc-700 uppercase tracking-widest">
