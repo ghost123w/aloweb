@@ -158,25 +158,47 @@ function repairDatabase($pdo) {
             }
         }
 
-        // 5. Settings Table columns
+        // 5. Settings Table
+        $pdo->exec("CREATE TABLE IF NOT EXISTS settings (
+            id INT AUTO_INCREMENT PRIMARY KEY
+        )");
+
         $settingsCols = [];
         $stmt = $pdo->query("SHOW COLUMNS FROM settings");
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $settingsCols[] = $row['Field'];
         }
 
-        if (!in_array('logo', $settingsCols)) {
-            $pdo->exec("ALTER TABLE settings ADD COLUMN logo VARCHAR(255) NULL");
-        }
-        if (!in_array('custom_header_code', $settingsCols)) {
-            $pdo->exec("ALTER TABLE settings ADD COLUMN custom_header_code TEXT NULL");
+        $expectedSettingsCols = [
+            'meta_keywords' => 'TEXT NULL',
+            'meta_description' => 'TEXT NULL',
+            'site_signature' => 'TEXT NULL',
+            'smtp_host' => 'VARCHAR(255) NULL',
+            'smtp_port' => 'INT NULL',
+            'smtp_user' => 'VARCHAR(255) NULL',
+            'smtp_pass' => 'VARCHAR(255) NULL',
+            'smtp_enc' => 'VARCHAR(20) NULL',
+            'logo' => 'VARCHAR(255) NULL',
+            'custom_header_code' => 'TEXT NULL',
+            'facebook_url' => 'VARCHAR(255) NULL',
+            'twitter_url' => 'VARCHAR(255) NULL',
+            'youtube_url' => 'VARCHAR(255) NULL',
+            'instagram_url' => 'VARCHAR(255) NULL',
+            'linkedin_url' => 'VARCHAR(255) NULL',
+            'tiktok_url' => 'VARCHAR(255) NULL',
+            'whatsapp_url' => 'VARCHAR(255) NULL'
+        ];
+
+        foreach ($expectedSettingsCols as $col => $type) {
+            if (!in_array($col, $settingsCols)) {
+                $pdo->exec("ALTER TABLE settings ADD COLUMN $col $type");
+            }
         }
 
-        $social_cols = ['facebook_url', 'twitter_url', 'youtube_url', 'instagram_url', 'linkedin_url', 'tiktok_url', 'whatsapp_url'];
-        foreach ($social_cols as $sc) {
-            if (!in_array($sc, $settingsCols)) {
-                $pdo->exec("ALTER TABLE settings ADD COLUMN $sc VARCHAR(255) NULL");
-            }
+        // 5.5 Ensure at least one settings row exists
+        $settingsCount = $pdo->query("SELECT COUNT(*) FROM settings")->fetchColumn();
+        if ($settingsCount == 0) {
+            $pdo->exec("INSERT INTO settings (meta_keywords) VALUES ('')");
         }
 
         // 6. Initialize default content if empty
