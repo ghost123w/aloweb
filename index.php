@@ -196,15 +196,36 @@ function getYouTubeID($url) {
                 <?php endif; ?>
             </section>
 
-        <?php else: ?>
-            <div class="py-40 text-center border-2 border-dashed border-white/10 rounded-3xl mx-6">
-                <h2 class="text-zinc-400 font-black text-4xl italic tracking-tighter uppercase mb-4">The Press is Quiet</h2>
-                <p class="text-zinc-600 font-bold uppercase tracking-widest text-xs">No articles were found in the archive.</p>
-                <div class="mt-10">
-                    <a href="admin/login" class="bg-white/5 hover:bg-white/10 text-white px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest transition">Initialize Narrative</a>
-                </div>
-            </div>
         <?php endif; ?>
+
+        <!-- Category Grid -->
+        <section class="p-10">
+            <div class="flex justify-between items-end mb-12">
+                <div>
+                    <h2 class="text-red-600 font-black uppercase tracking-widest text-xs mb-2">Discovery</h2>
+                    <h3 class="text-3xl font-black text-white tracking-tighter italic">Explore the taxonomy.</h3>
+                </div>
+                <a href="admin/login" class="bg-white/5 hover:bg-white/10 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition">Initialize Narrative</a>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                <?php foreach ($nav_categories as $cat): ?>
+                    <a href="index?category=<?php echo urlencode($cat['slug']); ?>" class="group block space-y-4">
+                        <div class="aspect-square rounded-2xl overflow-hidden bg-zinc-900 border border-white/5 relative shadow-2xl transition-all duration-500 group-hover:border-red-600/30 group-hover:-translate-y-1">
+                            <?php if (!empty($cat['image'])): ?>
+                                <img src="uploads/<?php echo htmlspecialchars($cat['image']); ?>" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition duration-700">
+                            <?php else: ?>
+                                <div class="w-full h-full flex items-center justify-center text-zinc-800 font-black text-4xl group-hover:text-red-600 transition">#</div>
+                            <?php endif; ?>
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                            <div class="absolute bottom-4 left-4">
+                                <span class="text-xs font-black text-white uppercase tracking-tighter"><?php echo htmlspecialchars($cat['name']); ?></span>
+                            </div>
+                        </div>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </section>
 
     </main>
 
