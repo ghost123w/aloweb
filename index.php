@@ -15,6 +15,7 @@ $settings = [];
 $nav_categories = [];
 $posts = [];
 $hero = null;
+$sidebar_posts = [];
 $db_error = null;
 
 try {
@@ -32,7 +33,7 @@ try {
     $stmt_nav = $pdo->query("SELECT * FROM categories ORDER BY name ASC");
     $nav_categories = $stmt_nav->fetchAll(PDO::FETCH_ASSOC);
 
-    // Fetch ALL posts (Removed LIMIT to satisfy requirement)
+    // Fetch ALL posts
     $category_slug = $_GET['category'] ?? null;
 
     try {
@@ -52,6 +53,8 @@ try {
     // Hero from the top post
     if (!empty($posts)) {
         $hero = array_shift($posts);
+        // Take next 5 for sidebar
+        $sidebar_posts = array_splice($posts, 0, 5);
     }
 
     // Fetch Footer Menu
@@ -85,10 +88,11 @@ function getYouTubeID($url) {
     <meta name="description" content="<?php echo htmlspecialchars($settings['meta_description'] ?? ''); ?>">
     <?php echo $settings['custom_header_code'] ?? ''; ?>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #000000; color: #ffffff; }
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     </style>
 </head>
 <body class="overflow-x-hidden">
@@ -108,7 +112,7 @@ function getYouTubeID($url) {
     <header class="bg-black border-b border-white/5">
         <div class="max-w-[1400px] mx-auto flex items-stretch">
             <div class="bg-red-600 px-8 py-6 flex items-center justify-center min-w-[180px]">
-                <a href="index" class="text-3xl font-[900] tracking-tighter text-white uppercase italic">NEWS5</a>
+                <a href="index" class="text-4xl font-[900] tracking-tighter text-white uppercase italic">NEWS5</a>
             </div>
             <div class="flex-grow flex items-center px-8">
                 <!-- Navigation can go here if needed for desktop -->
@@ -123,7 +127,7 @@ function getYouTubeID($url) {
         </div>
     </header>
 
-    <!-- Mega Menu (Simplified for the new look) -->
+    <!-- Mega Menu -->
     <div id="mega-menu" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/95 backdrop-blur-md" onclick="toggleMenu()"></div>
         <div class="absolute top-0 right-0 h-full w-full max-w-md bg-black border-l border-white/10 p-12 overflow-y-auto">
@@ -158,57 +162,97 @@ function getYouTubeID($url) {
             </div>
         <?php elseif ($hero): ?>
 
-            <!-- Hero Section -->
-            <section class="relative aspect-[16/9] md:aspect-[21/9] overflow-hidden group">
-                <a href="story?<?php echo !empty($hero['seo_title']) ? 'title=' . urlencode($hero['seo_title']) : 'id=' . $hero['id']; ?>">
-                    <?php if (!empty($hero['featured_image'])): ?>
-                        <img src="uploads/<?php echo htmlspecialchars($hero['featured_image']); ?>" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105">
-                    <?php else: ?>
-                        <div class="w-full h-full bg-zinc-900"></div>
-                    <?php endif; ?>
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
-                    <div class="absolute bottom-0 left-0 p-8 md:p-16 max-w-3xl">
-                        <span class="text-red-600 font-black uppercase tracking-widest text-xs mb-4 block"><?php echo htmlspecialchars($hero['category_name'] ?? 'Featured'); ?></span>
-                        <h1 class="text-3xl md:text-5xl font-black leading-tight text-white mb-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3">
+                <!-- Left: Hero Headline (Visible on Desktop) -->
+                <div class="hidden lg:flex flex-col justify-center p-12 bg-black border-r border-white/5">
+                    <span class="text-red-600 font-black uppercase tracking-widest text-[10px] mb-4 block"><?php echo htmlspecialchars($hero['category_name'] ?? 'Featured'); ?></span>
+                    <h1 class="text-4xl font-black leading-tight text-white mb-8 italic">
+                        <a href="story?<?php echo !empty($hero['seo_title']) ? 'title=' . urlencode($hero['seo_title']) : 'id=' . $hero['id']; ?>" class="hover:text-red-600 transition">
                             <?php echo htmlspecialchars($hero['title']); ?>
-                        </h1>
-                    </div>
-                </a>
-            </section>
+                        </a>
+                    </h1>
+                    <p class="text-slate-500 text-sm font-medium leading-relaxed line-clamp-3">
+                        <?php echo strip_tags($hero['content']); ?>
+                    </p>
+                </div>
 
-            <!-- News List -->
-            <section class="divide-y divide-white/5">
-                <?php if (empty($posts)): ?>
-                    <!-- No more posts -->
-                <?php else: ?>
-                    <?php foreach ($posts as $post): ?>
-                        <article class="p-6 md:p-10 hover:bg-white/[0.02] transition group">
-                            <a href="story?<?php echo !empty($post['seo_title']) ? 'title=' . urlencode($post['seo_title']) : 'id=' . $post['id']; ?>" class="flex items-center space-x-6 md:space-x-10">
-                                <div class="w-32 h-20 md:w-48 md:h-32 flex-shrink-0 overflow-hidden rounded-sm">
-                                    <?php if ($post['featured_image']): ?>
-                                        <img src="uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
-                                    <?php else: ?>
-                                        <div class="w-full h-full bg-zinc-900"></div>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="flex-grow">
-                                    <h2 class="text-lg md:text-2xl font-black leading-tight text-white group-hover:text-red-600 transition line-clamp-2">
-                                        <?php echo htmlspecialchars($post['title']); ?>
-                                    </h2>
-                                </div>
-                            </a>
-                        </article>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+                <!-- Center: Hero Image -->
+                <div class="relative aspect-video lg:aspect-auto overflow-hidden group">
+                    <a href="story?<?php echo !empty($hero['seo_title']) ? 'title=' . urlencode($hero['seo_title']) : 'id=' . $hero['id']; ?>">
+                        <?php if (!empty($hero['featured_image'])): ?>
+                            <img src="uploads/<?php echo htmlspecialchars($hero['featured_image']); ?>" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105">
+                        <?php else: ?>
+                            <div class="w-full h-full bg-zinc-900"></div>
+                        <?php endif; ?>
+
+                        <!-- Mobile Title Overlay -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent lg:hidden"></div>
+                        <div class="absolute bottom-0 left-0 p-8 lg:hidden">
+                            <span class="text-red-600 font-black uppercase tracking-widest text-[10px] mb-2 block"><?php echo htmlspecialchars($hero['category_name'] ?? 'Featured'); ?></span>
+                            <h1 class="text-2xl font-black leading-tight text-white italic">
+                                <?php echo htmlspecialchars($hero['title']); ?>
+                            </h1>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Right: Latest Stories Sidebar -->
+                <div class="bg-black p-8 lg:p-10 border-l border-white/5">
+                    <h3 class="text-white font-black uppercase tracking-widest text-xs mb-8 flex items-center">
+                        <span class="w-8 h-px bg-red-600 mr-3"></span> Latest Stories
+                    </h3>
+                    <div class="space-y-8">
+                        <?php foreach ($sidebar_posts as $sp): ?>
+                            <article class="group">
+                                <a href="story?<?php echo !empty($sp['seo_title']) ? 'title=' . urlencode($sp['seo_title']) : 'id=' . $sp['id']; ?>" class="flex space-x-4">
+                                    <div class="w-20 h-14 flex-shrink-0 overflow-hidden bg-zinc-900">
+                                        <?php if ($sp['featured_image']): ?>
+                                            <img src="uploads/<?php echo htmlspecialchars($sp['featured_image']); ?>" class="w-full h-full object-cover group-hover:scale-110 transition">
+                                        <?php endif; ?>
+                                    </div>
+                                    <h4 class="text-xs font-bold leading-snug text-slate-300 group-hover:text-red-600 transition line-clamp-2 uppercase">
+                                        <?php echo htmlspecialchars($sp['title']); ?>
+                                    </h4>
+                                </a>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Promotion Banner -->
+            <div class="bg-red-600 py-3 px-8 text-center text-[10px] font-black uppercase tracking-[0.3em] text-white">
+                Global Network Coverage • 24/7 Digital Operations • NEWS5 Premium Platform
+            </div>
+
+            <!-- News Grid -->
+            <section class="p-6 md:p-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <?php foreach ($posts as $post): ?>
+                    <article class="group flex flex-col space-y-4">
+                        <a href="story?<?php echo !empty($post['seo_title']) ? 'title=' . urlencode($post['seo_title']) : 'id=' . $post['id']; ?>" class="block aspect-[16/10] overflow-hidden bg-zinc-900 rounded-sm">
+                            <?php if ($post['featured_image']): ?>
+                                <img src="uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                            <?php endif; ?>
+                        </a>
+                        <div class="space-y-2">
+                            <span class="text-red-600 font-black uppercase tracking-widest text-[9px]"><?php echo htmlspecialchars($post['category_name'] ?? 'General'); ?></span>
+                            <h2 class="text-lg font-black leading-tight text-white group-hover:text-red-600 transition italic line-clamp-2">
+                                <a href="story?<?php echo !empty($post['seo_title']) ? 'title=' . urlencode($post['seo_title']) : 'id=' . $post['id']; ?>">
+                                    <?php echo htmlspecialchars($post['title']); ?>
+                                </a>
+                            </h2>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
             </section>
 
         <?php endif; ?>
 
-        <!-- Category Grid -->
-        <section class="p-10">
+        <!-- Category Discovery Section -->
+        <section class="p-12 border-t border-white/5 bg-zinc-950/50">
             <div class="flex justify-between items-end mb-12">
                 <div>
-                    <h2 class="text-red-600 font-black uppercase tracking-widest text-xs mb-2">Discovery</h2>
+                    <h2 class="text-red-600 font-black uppercase tracking-widest text-[10px] mb-2">Discovery</h2>
                     <h3 class="text-3xl font-black text-white tracking-tighter italic">Explore the taxonomy.</h3>
                 </div>
             </div>
@@ -224,7 +268,7 @@ function getYouTubeID($url) {
                             <?php endif; ?>
                             <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
                             <div class="absolute bottom-4 left-4">
-                                <span class="text-xs font-black text-white uppercase tracking-tighter"><?php echo htmlspecialchars($cat['name']); ?></span>
+                                <span class="text-[10px] font-black text-white uppercase tracking-tighter"><?php echo htmlspecialchars($cat['name']); ?></span>
                             </div>
                         </div>
                     </a>
@@ -262,10 +306,10 @@ function getYouTubeID($url) {
             <div class="grid grid-cols-2 md:grid-cols-4 gap-12 mb-20">
                 <?php foreach ($footer_sections as $fs): ?>
                     <div class="space-y-6">
-                        <h4 class="text-white font-bold text-lg"><?php echo htmlspecialchars($fs['title']); ?></h4>
+                        <h4 class="text-white font-bold text-lg uppercase tracking-widest text-[11px]"><?php echo htmlspecialchars($fs['title']); ?></h4>
                         <ul class="space-y-3">
                             <?php foreach ($footer_links[$fs['id']] as $fl): ?>
-                                <li><a href="<?php echo htmlspecialchars($fl['url']); ?>" class="text-slate-400 hover:text-white transition text-sm"><?php echo htmlspecialchars($fl['label']); ?></a></li>
+                                <li><a href="<?php echo htmlspecialchars($fl['url']); ?>" class="text-slate-400 hover:text-white transition text-[13px] font-medium"><?php echo htmlspecialchars($fl['label']); ?></a></li>
                             <?php endforeach; ?>
                         </ul>
                     </div>
@@ -273,7 +317,7 @@ function getYouTubeID($url) {
             </div>
 
             <!-- Bottom Legal Bar -->
-            <div class="pt-10 border-t border-white/5 flex flex-wrap gap-8 text-[13px] font-bold text-slate-500">
+            <div class="pt-10 border-t border-white/5 flex flex-wrap gap-8 text-[11px] font-black uppercase tracking-[0.2em] text-slate-600">
                 <a href="#" class="hover:text-white transition">Terms & Conditions</a>
                 <a href="#" class="hover:text-white transition">Privacy & Cookies</a>
                 <a href="#" class="hover:text-white transition">Privacy Options</a>

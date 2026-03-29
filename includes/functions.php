@@ -94,7 +94,7 @@ function repairDatabase($pdo) {
             $pdo->exec("ALTER TABLE categories ADD COLUMN image VARCHAR(255) NULL AFTER slug");
         }
 
-        // 2. Password Resets Table
+        // 2. Password Resets Table (Robust with OTP support)
         $pdo->exec("CREATE TABLE IF NOT EXISTS password_resets (
             id INT AUTO_INCREMENT PRIMARY KEY,
             email VARCHAR(255) NOT NULL,
