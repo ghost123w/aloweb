@@ -112,6 +112,22 @@ function repairDatabase($pdo) {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )");
 
+        // 3.5 Footer Menu Tables
+        $pdo->exec("CREATE TABLE IF NOT EXISTS footer_sections (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            sort_order INT DEFAULT 0
+        )");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS footer_links (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            section_id INT NOT NULL,
+            label VARCHAR(255) NOT NULL,
+            url VARCHAR(255) NOT NULL,
+            sort_order INT DEFAULT 0,
+            FOREIGN KEY (section_id) REFERENCES footer_sections(id) ON DELETE CASCADE
+        )");
+
         // 4. Posts Table columns
         $pdo->exec("CREATE TABLE IF NOT EXISTS posts (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -154,6 +170,13 @@ function repairDatabase($pdo) {
         }
         if (!in_array('custom_header_code', $settingsCols)) {
             $pdo->exec("ALTER TABLE settings ADD COLUMN custom_header_code TEXT NULL");
+        }
+
+        $social_cols = ['facebook_url', 'twitter_url', 'youtube_url', 'instagram_url', 'linkedin_url', 'tiktok_url', 'whatsapp_url'];
+        foreach ($social_cols as $sc) {
+            if (!in_array($sc, $settingsCols)) {
+                $pdo->exec("ALTER TABLE settings ADD COLUMN $sc VARCHAR(255) NULL");
+            }
         }
 
         // 6. Initialize default content if empty
