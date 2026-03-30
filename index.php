@@ -6,6 +6,9 @@ if (!file_exists(__DIR__ . '/includes/config.php')) {
 
 require_once 'includes/config.php';
 
+// Cache-Control headers for performance
+header("Cache-Control: public, max-age=3600"); // 1 hour browser cache
+
 // Debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -22,9 +25,7 @@ try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Force database repair to ensure schema consistency
     require_once 'includes/functions.php';
-    repairDatabase($pdo);
 
     $stmt_settings = $pdo->query("SELECT * FROM settings LIMIT 1");
     $settings = $stmt_settings->fetch(PDO::FETCH_ASSOC) ?: [];
@@ -57,13 +58,29 @@ try {
         $sidebar_posts = array_splice($posts, 0, 5);
     }
 
-    // Fetch Footer Menu
-    $footer_sections = $pdo->query("SELECT * FROM footer_sections ORDER BY sort_order ASC")->fetchAll(PDO::FETCH_ASSOC);
-    $footer_links = [];
-    foreach ($footer_sections as $fs) {
-        $stmt = $pdo->prepare("SELECT * FROM footer_links WHERE section_id = ? ORDER BY sort_order ASC");
-        $stmt->execute([$fs['id']]);
-        $footer_links[$fs['id']] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Fetch Footer Menu in a single query
+    $footer_stmt = $pdo->query("
+        SELECT fs.id as section_id, fs.title as section_title, fl.label, fl.url
+        FROM footer_sections fs
+        LEFT JOIN footer_links fl ON fs.id = fl.section_id
+        ORDER BY fs.sort_order ASC, fl.sort_order ASC
+    ");
+    $footer_data = $footer_stmt->fetchAll(PDO::FETCH_ASSOC);
+    $organized_footer = [];
+    foreach ($footer_data as $row) {
+        $sid = $row['section_id'];
+        if (!isset($organized_footer[$sid])) {
+            $organized_footer[$sid] = [
+                'title' => $row['section_title'],
+                'links' => []
+            ];
+        }
+        if ($row['label']) {
+            $organized_footer[$sid]['links'][] = [
+                'label' => $row['label'],
+                'url' => $row['url']
+            ];
+        }
     }
 
 } catch (PDOException $e) {
@@ -180,7 +197,7 @@ function getYouTubeID($url) {
                 <div class="relative aspect-video lg:aspect-auto overflow-hidden group">
                     <a href="story?<?php echo !empty($hero['seo_title']) ? 'title=' . urlencode($hero['seo_title']) : 'id=' . $hero['id']; ?>">
                         <?php if (!empty($hero['featured_image'])): ?>
-                            <img src="uploads/<?php echo htmlspecialchars($hero['featured_image']); ?>" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105">
+                            <img src="uploads/<?php echo htmlspecialchars($hero['featured_image']); ?>" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105" loading="eager">
                         <?php else: ?>
                             <div class="w-full h-full bg-zinc-900"></div>
                         <?php endif; ?>
@@ -231,7 +248,7 @@ function getYouTubeID($url) {
                     <article class="group flex flex-col space-y-4">
                         <a href="story?<?php echo !empty($post['seo_title']) ? 'title=' . urlencode($post['seo_title']) : 'id=' . $post['id']; ?>" class="block aspect-[16/10] overflow-hidden bg-zinc-900 rounded-sm">
                             <?php if ($post['featured_image']): ?>
-                                <img src="uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                                <img src="uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full h-full object-cover transition duration-500 group-hover:scale-105" loading="lazy">
                             <?php endif; ?>
                         </a>
                         <div class="space-y-2">
@@ -262,7 +279,7 @@ function getYouTubeID($url) {
                     <a href="index?category=<?php echo urlencode($cat['slug']); ?>" class="group block space-y-4">
                         <div class="aspect-square rounded-2xl overflow-hidden bg-zinc-900 border border-white/5 relative shadow-2xl transition-all duration-500 group-hover:border-red-600/30 group-hover:-translate-y-1">
                             <?php if (!empty($cat['image'])): ?>
-                                <img src="uploads/<?php echo htmlspecialchars($cat['image']); ?>" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition duration-700">
+                                <img src="uploads/<?php echo htmlspecialchars($cat['image']); ?>" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition duration-700" loading="lazy">
                             <?php else: ?>
                                 <div class="w-full h-full flex items-center justify-center text-zinc-800 font-black text-4xl group-hover:text-red-600 transition">#</div>
                             <?php endif; ?>
@@ -304,11 +321,11 @@ function getYouTubeID($url) {
 
             <!-- Taxonomy Columns -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-12 mb-20">
-                <?php foreach ($footer_sections as $fs): ?>
+                <?php foreach ($organized_footer as $section): ?>
                     <div class="space-y-6">
-                        <h4 class="text-white font-bold text-lg uppercase tracking-widest text-[11px]"><?php echo htmlspecialchars($fs['title']); ?></h4>
+                        <h4 class="text-white font-bold text-lg uppercase tracking-widest text-[11px]"><?php echo htmlspecialchars($section['title']); ?></h4>
                         <ul class="space-y-3">
-                            <?php foreach ($footer_links[$fs['id']] as $fl): ?>
+                            <?php foreach ($section['links'] as $fl): ?>
                                 <li><a href="<?php echo htmlspecialchars($fl['url']); ?>" class="text-slate-400 hover:text-white transition text-[13px] font-medium"><?php echo htmlspecialchars($fl['label']); ?></a></li>
                             <?php endforeach; ?>
                         </ul>

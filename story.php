@@ -6,6 +6,9 @@ if (!file_exists(__DIR__ . '/includes/config.php')) {
 
 require_once 'includes/config.php';
 
+// Cache-Control headers for performance
+header("Cache-Control: public, max-age=3600"); // 1 hour browser cache
+
 $title_slug = $_GET['title'] ?? '';
 $post_id = $_GET['id'] ?? '';
 
@@ -13,9 +16,7 @@ try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Ensure database is in sync
     require_once 'includes/functions.php';
-    repairDatabase($pdo);
 
     // Check if categories table exists
     $catTableCheck = $pdo->query("SHOW TABLES LIKE 'categories'")->rowCount() > 0;
@@ -46,13 +47,29 @@ try {
     $settings = $stmt->fetch();
     if (!$settings) $settings = [];
 
-    // Fetch Footer Menu
-    $footer_sections = $pdo->query("SELECT * FROM footer_sections ORDER BY sort_order ASC")->fetchAll(PDO::FETCH_ASSOC);
-    $footer_links = [];
-    foreach ($footer_sections as $fs) {
-        $stmt = $pdo->prepare("SELECT * FROM footer_links WHERE section_id = ? ORDER BY sort_order ASC");
-        $stmt->execute([$fs['id']]);
-        $footer_links[$fs['id']] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Fetch Footer Menu in a single query
+    $footer_stmt = $pdo->query("
+        SELECT fs.id as section_id, fs.title as section_title, fl.label, fl.url
+        FROM footer_sections fs
+        LEFT JOIN footer_links fl ON fs.id = fl.section_id
+        ORDER BY fs.sort_order ASC, fl.sort_order ASC
+    ");
+    $footer_data = $footer_stmt->fetchAll(PDO::FETCH_ASSOC);
+    $organized_footer = [];
+    foreach ($footer_data as $row) {
+        $sid = $row['section_id'];
+        if (!isset($organized_footer[$sid])) {
+            $organized_footer[$sid] = [
+                'title' => $row['section_title'],
+                'links' => []
+            ];
+        }
+        if ($row['label']) {
+            $organized_footer[$sid]['links'][] = [
+                'label' => $row['label'],
+                'url' => $row['url']
+            ];
+        }
     }
 
 } catch (PDOException $e) {
@@ -122,7 +139,7 @@ $meta_description = !empty($post['meta_description']) ? $post['meta_description'
             <!-- Featured Image with Overlay -->
             <div class="relative w-full aspect-[21/9] overflow-hidden">
                 <?php if ($post['featured_image']): ?>
-                    <img src="uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full h-full object-cover">
+                    <img src="uploads/<?php echo htmlspecialchars($post['featured_image']); ?>" class="w-full h-full object-cover" loading="eager">
                     <div class="absolute bottom-4 left-4 bg-black/80 px-3 py-1 text-[10px] font-bold text-white uppercase tracking-widest border border-white/10">
                         TASNIM NEWS AGENCY
                     </div>
@@ -185,11 +202,11 @@ $meta_description = !empty($post['meta_description']) ? $post['meta_description'
 
             <!-- Taxonomy Columns -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-12 mb-20">
-                <?php foreach ($footer_sections as $fs): ?>
+                <?php foreach ($organized_footer as $section): ?>
                     <div class="space-y-6">
-                        <h4 class="text-white font-bold text-lg uppercase tracking-widest text-[11px]"><?php echo htmlspecialchars($fs['title']); ?></h4>
+                        <h4 class="text-white font-bold text-lg uppercase tracking-widest text-[11px]"><?php echo htmlspecialchars($section['title']); ?></h4>
                         <ul class="space-y-3">
-                            <?php foreach ($footer_links[$fs['id']] as $fl): ?>
+                            <?php foreach ($section['links'] as $fl): ?>
                                 <li><a href="<?php echo htmlspecialchars($fl['url']); ?>" class="text-slate-400 hover:text-white transition text-[13px] font-medium"><?php echo htmlspecialchars($fl['label']); ?></a></li>
                             <?php endforeach; ?>
                         </ul>
