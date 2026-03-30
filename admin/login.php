@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - YourStoryline</title>
+    <title>Admin Login - H-shadow</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="glass-card p-12 rounded-[3rem] w-full max-w-md relative z-10 border border-white/5">
         <div class="text-center mb-12">
-            <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-3xl text-white shadow-2xl shadow-blue-500/20 mx-auto mb-6">S</div>
+            <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-3xl text-white shadow-2xl shadow-blue-500/20 mx-auto mb-6">H</div>
             <h1 class="text-4xl font-black text-white tracking-tighter mb-2 italic">Command Portal</h1>
             <p class="text-slate-500 font-bold uppercase tracking-[0.2em] text-[10px]">Strategic Narrative Access</p>
         </div>

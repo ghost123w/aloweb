@@ -35,7 +35,7 @@ function sendNotification($to, $subject, $message) {
             $mail->isMail();
         }
 
-        $mail->setFrom($settings['smtp_user'] ?? 'no-reply@yourstoryline.com', 'Storyline System');
+        $mail->setFrom($settings['smtp_user'] ?? 'no-reply@h-shadow.com', 'H-shadow System');
         $mail->addAddress($to);
         $mail->isHTML(true);
         $mail->Subject = $subject;

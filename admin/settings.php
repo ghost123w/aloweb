@@ -53,7 +53,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - YourStoryline Admin</title>
+    <title>Settings - H-shadow Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -96,8 +96,8 @@ try {
 
     <aside class="w-72 bg-[#11131a] text-slate-400 flex flex-col p-8 space-y-10 shadow-2xl fixed h-full z-50 border-r border-white/5">
         <div class="flex items-center space-x-4">
-            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-lg shadow-blue-500/20">S</div>
-            <h2 class="text-2xl font-black tracking-tighter text-white">Storyline</h2>
+            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-lg shadow-blue-500/20">H</div>
+            <h2 class="text-2xl font-black tracking-tighter text-white">H-shadow</h2>
         </div>
         <nav class="flex-grow space-y-2">
             <a href="index" class="sidebar-item flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
@@ -215,7 +215,7 @@ try {
                     </div>
                     <div class="space-y-6">
                         <label class="block text-[10px] font-black text-slate-500 ml-1 uppercase tracking-[0.2em]">Email Signature (HTML Interface)</label>
-                        <textarea name="site_signature" rows="4" class="w-full px-8 py-6 rounded-[2rem] outline-none text-sm font-mono placeholder:text-slate-800" placeholder="<p>Best regards, The Storyline Team</p>"><?php echo htmlspecialchars($settings['site_signature'] ?? ''); ?></textarea>
+                        <textarea name="site_signature" rows="4" class="w-full px-8 py-6 rounded-[2rem] outline-none text-sm font-mono placeholder:text-slate-800" placeholder="<p>Best regards, The H-shadow Team</p>"><?php echo htmlspecialchars($settings['site_signature'] ?? ''); ?></textarea>
                     </div>
                 </section>
 
@@ -235,7 +235,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connectivity Alert - YourStoryline Admin</title>
+    <title>Connectivity Alert - H-shadow Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');

@@ -67,7 +67,7 @@ function getYouTubeID($url) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YourStoryline - Premium Magazine</title>
+    <title>H-shadow - Premium Magazine</title>
     <meta name="keywords" content="<?php echo htmlspecialchars($settings['meta_keywords'] ?? ''); ?>">
     <meta name="description" content="<?php echo htmlspecialchars($settings['meta_description'] ?? ''); ?>">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -86,7 +86,7 @@ function getYouTubeID($url) {
         <div class="max-w-[1400px] mx-auto px-4 md:px-8 flex justify-between items-center">
             <div class="flex items-center space-x-10">
                 <a href="index" class="flex items-center space-x-2">
-                    <span class="text-2xl font-[900] tracking-tighter text-slate-900">STORYLINE</span>
+                    <span class="text-2xl font-[900] tracking-tighter text-slate-900">H-SHADOW</span>
                     <span class="text-2xl font-[900] tracking-tighter text-blue-600">NEWS</span>
                 </a>
                 <div class="hidden lg:flex items-center space-x-6 text-[13px] font-black uppercase tracking-tight text-slate-700">
@@ -268,7 +268,7 @@ function getYouTubeID($url) {
                     </a>
                 </h3>
                 <p class="text-slate-500 font-bold text-[11px] uppercase tracking-widest">
-                    Powered by Storyline News
+                    Powered by H-shadow News
                 </p>
             </div>
             <div class="w-full md:w-[350px] relative overflow-hidden">
@@ -328,7 +328,7 @@ function getYouTubeID($url) {
     <footer class="bg-slate-900 text-white py-20 mt-32">
         <div class="max-w-[1400px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-4 gap-16">
             <div class="lg:col-span-2 space-y-8">
-                <h3 class="text-4xl font-[900] tracking-tighter">STORYLINE NEWS</h3>
+                <h3 class="text-4xl font-[900] tracking-tighter">H-SHADOW NEWS</h3>
                 <p class="text-slate-400 max-w-sm text-lg leading-relaxed"><?php echo htmlspecialchars($settings['meta_description'] ?? 'Curating the world\'s most compelling stories in a clean, modern aesthetic.'); ?></p>
                 <div class="flex space-x-6">
                     <a href="#" class="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center hover:bg-blue-600 transition">T</a>
@@ -353,7 +353,7 @@ function getYouTubeID($url) {
             </div>
         </div>
         <div class="max-w-[1400px] mx-auto px-6 mt-20 pt-8 border-t border-white/5 text-center text-slate-500 text-sm font-bold">
-            © <?php echo date('Y'); ?> STORYLINE NEWS. All rights reserved.
+            © <?php echo date('Y'); ?> H-SHADOW NEWS. All rights reserved.
         </div>
     </footer>
 

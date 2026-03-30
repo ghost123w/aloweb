@@ -43,7 +43,7 @@ function getYouTubeID($url) {
 }
 
 // SEO Fallbacks
-$meta_title = !empty($post['meta_title']) ? $post['meta_title'] : $post['title'] . " - YourStoryline";
+$meta_title = !empty($post['meta_title']) ? $post['meta_title'] : $post['title'] . " - H-shadow";
 $meta_keywords = !empty($post['meta_keywords']) ? $post['meta_keywords'] : ($settings['meta_keywords'] ?? '');
 $meta_description = !empty($post['meta_description']) ? $post['meta_description'] : substr(strip_tags($post['content']), 0, 160);
 ?>
@@ -67,7 +67,7 @@ $meta_description = !empty($post['meta_description']) ? $post['meta_description'
     <!-- Navigation -->
     <nav class="border-b border-slate-100 py-6 sticky top-0 bg-white/80 backdrop-blur-md z-50">
         <div class="max-w-4xl mx-auto px-6 flex justify-between items-center">
-            <a href="index" class="text-2xl font-black tracking-tighter text-slate-900 uppercase">YourStoryline</a>
+            <a href="index" class="text-2xl font-black tracking-tighter text-slate-900 uppercase">H-shadow</a>
             <a href="index" class="text-sm font-bold text-slate-400 hover:text-slate-900 transition uppercase tracking-widest">Back to Stories</a>
         </div>
     </nav>
@@ -112,10 +112,10 @@ $meta_description = !empty($post['meta_description']) ? $post['meta_description'
     <!-- Footer -->
     <footer class="bg-slate-900 text-white py-20 mt-20">
         <div class="max-w-4xl mx-auto px-6 text-center space-y-8">
-            <h3 class="text-3xl font-black tracking-tighter">YourStoryline</h3>
+            <h3 class="text-3xl font-black tracking-tighter">H-shadow</h3>
             <p class="text-slate-400 text-lg max-w-md mx-auto"><?php echo htmlspecialchars($settings['meta_description'] ?? 'Curating the world\'s most compelling stories.'); ?></p>
             <div class="text-slate-500 text-sm font-bold pt-8 border-t border-white/5">
-                © <?php echo date('Y'); ?> YourStoryline. Precision narrative craft.
+                © <?php echo date('Y'); ?> H-shadow. Precision narrative craft.
             </div>
         </div>
     </footer>
