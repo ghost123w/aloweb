@@ -55,7 +55,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - YourStoryline Admin</title>
+    <title>Dashboard - H-shadow Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -105,8 +105,8 @@ try {
     <!-- Sidebar -->
     <aside class="w-72 bg-[#0d0f16] text-slate-400 flex flex-col p-8 space-y-10 shadow-2xl fixed h-full z-50 border-r border-white/5">
         <div class="flex items-center space-x-4">
-            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-lg shadow-blue-500/20">S</div>
-            <h2 class="text-2xl font-black tracking-tighter text-white">Storyline</h2>
+            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-lg shadow-blue-500/20">H</div>
+            <h2 class="text-2xl font-black tracking-tighter text-white">H-shadow</h2>
         </div>
         <nav class="flex-grow space-y-2">
             <a href="index" class="sidebar-item active flex items-center space-x-4 px-5 py-3.5 rounded-2xl font-bold">
